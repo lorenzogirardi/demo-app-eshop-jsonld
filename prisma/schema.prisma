@@ -14,11 +14,30 @@ model Product {
   imageUrl    String
   name        String
   price       Int
+  brand       String
+  sku         String?    @unique
+  mpn         String?
+  rating      Float      @default(0)
+  reviewCount Int        @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   CartItem    CartItem[]
+  reviews     Review[]
 
   @@map("products")
+}
+
+model Review {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  author        String
+  datePublished DateTime
+  reviewBody    String
+  name          String
+  ratingValue   Int
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId     String   @db.ObjectId
+
+  @@map("reviews")
 }
 
 model Cart {

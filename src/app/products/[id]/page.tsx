@@ -14,7 +14,10 @@ interface ProductPageProps {
 }
 
 const getProduct = cache(async (id: string) => {
-  const product = await prisma.product.findUnique({ where: { id } });
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { reviews: true },
+  });
   if (!product) notFound();
   return product;
 });
@@ -42,22 +45,50 @@ export default async function ProductPage({
   params: { id },
 }: ProductPageProps) {
   const product = await getProduct(id);
-  const { name, description, imageUrl, price } = product;
+  const { name, description, imageUrl, price, brand, sku, mpn, rating, reviewCount, reviews } = product;
   const url = process.env.URL + "/products/" + id;
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name,
-    description,
     image: imageUrl,
+    description,
+    brand: {
+      "@type": "Brand",
+      name: brand,
+    },
+    sku: sku,
+    mpn: mpn,
     offers: {
       "@type": "Offer",
-      price: (price / 100).toString(),
-      priceCurrency: "GBP",
-      availability: "https://schema.org/InStock",
       url: url,
+      priceCurrency: "GBP",
+      price: (price / 100).toString(),
+      priceValidUntil: "2025-12-31",
+      itemCondition: "https://schema.org/NewCondition",
+      availability: "https://schema.org/InStock",
     },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: rating.toString(),
+      reviewCount: reviewCount.toString(),
+    },
+    review: reviews.map((review: any) => {
+      return {
+        "@type": "Review",
+        author: review.author,
+        datePublished: review.datePublished.toISOString(),
+        reviewBody: review.reviewBody,
+        name: review.name,
+        reviewRating: {
+          "@type": "Rating",
+          bestRating: "5",
+          ratingValue: review.ratingValue.toString(),
+          worstRating: "1",
+        },
+      };
+    }),
   };
 
   return (
