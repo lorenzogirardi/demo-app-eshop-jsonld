@@ -1,0 +1,42 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "node-deploy.fullname" . }}-vs
+spec:
+  gateways:
+  - {{ include "node-deploy.fullname" . }}-gw
+  hosts:
+  - {{ .Values.ingress.host }}
+  http:
+  - route:
+    - destination:
+        host: {{ include "node-deploy.fullname" . }}
+        port:
+          number: {{ .Values.ingress.containerPort }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ include "node-deploy.fullname" . }}-gw
+  annotations:
+    "external-dns.alpha.kubernetes.io/ingress": {{ if eq .Values.ingress.access "public" }}istio-system/public-ingress{{ else if eq .Values.ingress.access "internal"}}istio-system/internal-ingress{{ end }}
+spec:
+  selector:
+    istio: {{ if eq .Values.ingress.access "public" }}ingressgateway{{else if eq .Values.ingress.access "internal"}}internal-istio-ingressgateway{{ end }}
+  servers:
+  - hosts:
+    - '*'
+    port:
+      name: https
+      number: 443
+      protocol: HTTPS
+    tls:
+      credentialName: playground-guccidigital-tls
+      mode: SIMPLE
+  - hosts:
+    - {{ .Values.ingress.host }}
+    port:
+      name: http
+      number: 80
+      protocol: HTTP
+

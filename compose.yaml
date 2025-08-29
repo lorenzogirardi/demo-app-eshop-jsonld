@@ -1,0 +1,11 @@
+services:
+  gd-demo-app:
+    container_name: gd-demo-app
+    image: demo-app:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: 
+      - 3000:3000
+    env_file:
+      - ./.env
