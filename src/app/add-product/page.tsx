@@ -21,13 +21,14 @@ async function addProduct(formData: FormData) {
   const description = formData.get("description")?.toString();
   const imageUrl = formData.get("imageUrl")?.toString();
   const price = Number(formData.get("price") || 0);
+  const brand = formData.get("brand")?.toString();
 
-  if (!name || !description || !imageUrl || !price) {
+  if (!name || !description || !imageUrl || !price || !brand) {
     throw Error("Missing required fields");
   }
 
   await prisma.product.create({
-    data: { name, description, imageUrl, price },
+    data: { name, description, imageUrl, price, brand },
   });
 
   redirect("/");
@@ -68,6 +69,12 @@ export default async function AddProductPage() {
           name="price"
           placeholder="Price"
           type="number"
+          className="mb-3 w-full input input-bordered"
+        />
+        <input
+          required
+          name="brand"
+          placeholder="Brand"
           className="mb-3 w-full input input-bordered"
         />
         <FormSubmitButton className=" btn-block">Add Product</FormSubmitButton>
