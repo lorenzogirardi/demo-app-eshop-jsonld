@@ -1,4 +1,4 @@
-# Gucci Digital - Platform Engineering Demo App
+# Platform Engineering Demo App
 
 ## Overview
 This is a demo e-commerce application built with Next.js, React, and TypeScript. It showcases a simple online shopping experience with product browsing, cart functionality, and checkout process.
