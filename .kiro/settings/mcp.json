@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "ecommerce-mcp": {
+      "command": "node",
+      "args": ["./mcp-server/dist/index.js"],
+      "cwd": ".",
+      "env": {
+        "DATABASE_URL": "mongodb://localhost:27017/ecommerce",
+        "NODE_ENV": "development"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "get_products",
+        "get_product",
+        "get_cart",
+        "get_users",
+        "get_user",
+        "get_analytics",
+        "get_metrics",
+        "health_check"
+      ]
+    }
+  }
+}
