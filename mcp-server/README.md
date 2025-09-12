@@ -654,25 +654,56 @@ docker-compose logs ollama
 
 ## Documentation
 
+- **[BASIC-TESTING.md](BASIC-TESTING.md)** - Test MCP server without AI (start here!)
 - **[TESTING.md](TESTING.md)** - Comprehensive testing and validation guide
 - **[EXAMPLES.md](EXAMPLES.md)** - Real-world use cases and practical examples
 - **[ai-config.json](ai-config.json)** - AI provider configuration reference
 
 ## Quick Test Commands
 
-After setup, validate your installation:
+### Basic Testing (No AI Required)
+
+Test core MCP functionality first:
 
 ```bash
-# 1. Run automated tests
+# 1. Run basic tests (no AI needed)
+./test-basic-mcp.sh
+
+# 2. Start MCP server
+npm run dev
+
+# 3. Test in Kiro IDE - Core functionality
+{
+  "tool": "health_check",
+  "args": {}
+}
+
+{
+  "tool": "get_metrics", 
+  "args": {"format": "json"}
+}
+
+{
+  "tool": "get_products",
+  "args": {"limit": 5}
+}
+```
+
+### Full Testing (With AI)
+
+After basic tests pass:
+
+```bash
+# 1. Run full test suite
 ./test-mcp-server.sh
 
-# 2. Test in Kiro IDE - Basic validation
+# 2. Test AI providers
 {
   "tool": "ai_providers",
   "args": {}
 }
 
-# 3. Test AI chat with local Ollama
+# 3. Test AI chat (local)
 {
   "tool": "ai_chat",
   "args": {
@@ -682,7 +713,7 @@ After setup, validate your installation:
   }
 }
 
-# 4. Test with external provider (if configured)
+# 4. Test external AI (if configured)
 {
   "tool": "ai_chat",
   "args": {
