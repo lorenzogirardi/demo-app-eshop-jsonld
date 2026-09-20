@@ -5,7 +5,7 @@
 Requires Docker (with Compose v2), `openssl` and `curl`. The only value you supply is your OpenRouter API key.
 
 ```bash
-git clone -b feature/agentic-commerce git@github.com:lorenzogirardi/demo-app-eshop-jsonld.git
+git clone git@github.com:lorenzogirardi/demo-app-eshop-jsonld.git
 cd demo-app-eshop-jsonld
 OPENROUTER_API_KEY=sk-or-... ./scripts/setup.sh     # or run without the variable and paste the key when asked
 ```
