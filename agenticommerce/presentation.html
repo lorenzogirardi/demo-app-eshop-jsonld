@@ -343,6 +343,98 @@ tr:last-child td{border-bottom:none}
   <div class="foot"><span>Fonte: proposta da validare</span><span>14</span></div>
 </section>
 
+<!-- A1 · Appendice: Static Demo -->
+<section class="slide">
+  <h2><small>Appendice</small>Static Demo — Dimostratore Funzionante</h2>
+  <p class="lead">Screenshots dal dimostratore attivo su localhost:3000. L'applicazione dimostra le capacità descritte nella presentazione: ricerca conversazionale, assistente shopping AI, confronto guidato e risposte ancorate al catalogo.</p>
+  <div class="grid g3" style="margin-top:20px">
+    <div class="card hl"><h3>Ricerca conversazionale</h3><p>Il cliente descrive un bisogno in linguaggio naturale (es. "qualcosa per la serata"). L'AI restituisce prodotti pertinenti con spiegazione.</p></div>
+    <div class="card hl"><h3>Shopping assistant</h3><p>Chat laterale che guida la scelta: confronta prodotti, spiega differenze di prezzo e materiale, propone alternative.</p></div>
+    <div class="card hl"><h3>Risposte ancorate al catalogo</h3><p>Prezzi, descrizioni e SKU sono quelli reali del catalogo. Nessuna allucinazione: tutto verificabile.</p></div>
+  </div>
+  <div class="strip" style="margin-top:18px"><b>Nota:</b> il demo è interattivo. Le screenshot qui riportate documentano lo stato attuale del dimostratore al 20/09/2026.</div>
+  <div class="foot"><span>Fonte: dimostratore attivo · localhost:3000</span><span>A1</span></div>
+</section>
+
+<!-- A2 · Screenshot: Info prodotto via chat -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendice · Screenshot 1</small>Info prodotto via chat</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.06.png" alt="Chat: info prodotto Nylon Shoulder Tote" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 style="color:var(--acc)">Il cliente chiede info sulla Nylon Shoulder Tote</h3>
+      <p>L'assistente restituisce i dettagli del prodotto: prezzo, categoria, SKU e descrizione completa. Il cliente ottiene informazioni senza aprire la pagina prodotto.</p>
+      <p style="color:var(--fg2);font-size:15px">Sito: localhost:3000 · Toggle AI attivo</p>
+    </div>
+  </div>
+  <div class="foot"><span>Fonte: screenshot dimostratore</span><span>A2</span></div>
+</section>
+
+<!-- A3 · Screenshot: Input incompleto -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendice · Screenshot 2</small>Gestione input incompleto</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.17.png" alt="Chat: input incompleto pte" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 style="color:var(--acc)">Il cliente digita "pte"</h3>
+      <p>L'assistente riconosce il messaggio incompleto, chiede di ripetere e propone 3 azioni: trovare borse simili, cercare in un'altra categoria, filtrare per prezzo.</p>
+      <p style="color:var(--fg2);font-size:15px">Dati reali del catalogo, non generati dall'AI.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Fonte: screenshot dimostratore</span><span>A3</span></div>
+</section>
+
+<!-- A4 · Screenshot: Confronto prodotti -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendice · Screenshot 3</small>Confronto tra prodotti</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.29.png" alt="Chat: richiesta confronto borse" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 style="color:var(--acc)">"Me la confronti con le altre"</h3>
+      <p>Nella stessa chat, il cliente chiede un confronto con le altre borse del catalogo. L'assistente genera un tavolo comparativo con materiale, prezzo e punti di forza.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Fonte: screenshot dimostratore</span><span>A4</span></div>
+</section>
+
+<!-- A5 · Screenshot: Risultato confronto -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendice · Screenshot 4</small>Risultato confronto</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.43.png" alt="Chat: risultato confronto borse" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 style="color:var(--acc)">Risultato: scheda prodotto e confronto</h3>
+      <p>L'assistente mostra il risultato del confronto con scheda prodotto Nylon Shoulder Tote (€399) e le alternative del catalogo: Structured Tote Bag (€1599), Leather Handbag (€1299).</p>
+      <p style="color:var(--fg2);font-size:15px">Dati reali del catalogo: prezzi, materiali e caratteristiche corrispondono alle pagine prodotto.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Fonte: screenshot dimostratore</span><span>A5</span></div>
+</section>
+
+<!-- A6 · Screenshot: Ricerca AI-powered -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendice · Screenshot 5</small>Ricerca AI-powered</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-19 at 21.00.54.png" alt="Ricerca AI: something for the evening" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 style="color:var(--acc)">"something for the evening"</h3>
+      <p>Query in linguaggio naturale con toggle AI attivo. L'AI risponde con raccomandazione motivata e mostra card prodotto: Metallic Evening Bag (€799), Silk Scarf (€249), Paisley Silk Stole (€499).</p>
+      <p style="color:var(--fg2);font-size:15px">Banner blu in alto: "AI-powered search results. Verify prices before purchasing."</p>
+    </div>
+  </div>
+  <div class="foot"><span>Fonte: screenshot dimostratore</span><span>A6</span></div>
+</section>
+
 </div></div>
 
 <div id="ui">

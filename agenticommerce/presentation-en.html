@@ -767,6 +767,110 @@ tr:last-child td { border-bottom: none; }
   <div class="foot"><span>Source: project documentation · proposed roadmap</span><span>14</span></div>
 </section>
 
+<!-- ═══════════════════════════════════════════ APPENDIX A1: STATIC DEMO ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Appendix</small>Static Demo — Working Prototype</h2>
+  <p style="font-size:20px;color:var(--fg2);max-width:960px">Screenshots from the live demo running on localhost:3000. The application demonstrates the capabilities described in this presentation: conversational search, AI shopping assistant, guided comparison, and catalog-anchored responses.</p>
+  <div class="grid g3 mt-m">
+    <div class="card hl"><h3>Conversational search</h3><p>Customer describes a need in natural language (e.g., "something for the evening"). AI returns relevant products with explanation.</p></div>
+    <div class="card hl"><h3>Shopping assistant</h3><p>Side chat panel guides the choice: compares products, explains price and material differences, suggests alternatives.</p></div>
+    <div class="card hl"><h3>Catalog-anchored answers</h3><p>Prices, descriptions, and SKUs are real catalog data. No hallucinations: everything is verifiable.</p></div>
+  </div>
+  <div class="card mt-m" style="border-color:var(--mut)">
+    <p style="font-size:15px;color:var(--fg2)"><b>Note:</b> The demo is interactive. These screenshots document the current state of the prototype as of 20/09/2026.</p>
+  </div>
+  <div class="foot"><span>Source: live demo · localhost:3000</span><span>A1</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ APPENDIX A2: PRODUCT DETAILS VIA CHAT ═══════════════════════════════════════════ -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendix · Screenshot 1</small>Product details requested via chat</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.06.png" alt="Chat: product info Nylon Shoulder Tote" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 class="accent">Request: "dimmi qualcosa di Nylon Shoulder Tote"</h3>
+      <p>The assistant returns structured product details: price (€399), category (Bags, Accessories), SKU (NST-0016), and full description.</p>
+      <div class="card" style="background:var(--panel2);border-color:var(--acc)"><p style="font-size:14px"><b>What this demonstrates:</b> real catalog access, natural language understanding, zero hallucinations.</p></div>
+      <p style="color:var(--fg2);font-size:15px">The customer can get information about any product directly in the chat without navigating away.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: demo screenshot · product details request</span><span>A2</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ APPENDIX A3: ERROR HANDLING ═══════════════════════════════════════════ -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendix · Screenshot 2</small>Handling incomplete input</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.17.png" alt="Chat: incomplete input pte" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 class="accent">Incomplete input: "pte"</h3>
+      <p>When the customer types an incomplete message, the assistant doesn't fail silently.</p>
+      <div class="card" style="background:var(--panel2);border-color:var(--acc)"><p style="font-size:14px"><b>What this demonstrates:</b> comparison anchored to real catalog data. Prices, materials, and features match the product pages.</p></div>
+      <p style="color:var(--fg2);font-size:15px">The customer doesn't need to open dozens of pages: the assistant compares and explains differences clearly.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: demo screenshot · assistant conversation</span><span>A3</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ APPENDIX A4: COMPARISON REQUEST ═══════════════════════════════════════════ -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendix · Screenshot 3</small>Guided comparison between products</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.29.png" alt="Chat: comparison request" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 class="accent">"Me la confronti con le altre"</h3>
+      <p>In the same chat session, the customer asks for a comparison with other bags in the catalog. The assistant immediately generates a comparative table.</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+        <li style="padding-left:20px;position:relative;font-size:15px"><span style="position:absolute;left:0;color:var(--ok)">1</span> Compares Nylon Shoulder Tote (€399) with Structured Tote Bag (€1599) and Leather Handbag (€1299)</li>
+        <li style="padding-left:20px;position:relative;font-size:15px"><span style="position:absolute;left:0;color:var(--ok)">2</span> Shows materials, prices, and key strengths side by side</li>
+        <li style="padding-left:20px;position:relative;font-size:15px"><span style="position:absolute;left:0;color:var(--ok)">3</span> All data anchored to real catalog entries</li>
+      </ul>
+      <div class="card" style="background:var(--panel2);border-color:var(--ok)"><p style="font-size:14px"><b>Principle:</b> The customer doesn't need to open dozens of pages: the assistant compares and explains differences clearly.</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: demo screenshot · comparison request</span><span>A4</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ APPENDIX A5: COMPARISON RESULT ═══════════════════════════════════════════ -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendix · Screenshot 4</small>Comparison result with product cards</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-20 at 07.05.43.png" alt="Chat: comparison result with product cards" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 class="accent">Product cards and comparison table</h3>
+      <p>The assistant shows the Nylon Shoulder Tote (€399) product card and the comparison with other bags in the catalog: Structured Tote Bag (€1599), Leather Handbag (€1299).</p>
+      <div class="card" style="background:var(--panel2);border-color:var(--acc)"><p style="font-size:14px"><b>What this demonstrates:</b> comparison anchored to real catalog data. Prices, materials, and features match the product pages.</p></div>
+      <p style="color:var(--fg2);font-size:15px">The customer can see all alternatives at a glance without navigating between pages.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: demo screenshot · comparison result</span><span>A5</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ APPENDIX A6: AI-POWERED SEARCH ═══════════════════════════════════════════ -->
+<section class="slide" style="padding-bottom:40px">
+  <h2><small>Appendix · Screenshot 5</small>AI-powered search</h2>
+  <div class="grid g2" style="flex:1;gap:20px;align-items:start">
+    <div style="background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;max-height:520px;display:flex;align-items:center;justify-content:center">
+      <img src="img/Screenshot 2026-09-19 at 21.00.54.png" alt="AI-powered search: something for the evening" style="width:100%;height:auto;display:block">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;justify-content:center">
+      <h3 class="accent">Query: "something for the evening"</h3>
+      <p>The search bar with the <b>AI</b> toggle active interprets the natural language request and returns relevant products with a motivated recommendation.</p>
+      <div class="card" style="background:var(--panel2);border-color:var(--acc)"><p style="font-size:14px"><b>What this demonstrates:</b> semantic search, motivated recommendation, real catalog, toggleable AI. The banner "AI-powered search results. Verify prices before purchasing." is always visible.</p></div>
+      <p style="color:var(--fg2);font-size:15px">Reduces time from discovery to decision. The customer doesn't need to translate their need into technical filters.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: demo screenshot · AI-powered search on localhost:3000</span><span>A6</span></div>
+</section>
+
 </div></div>
 
 <div id="ui">
