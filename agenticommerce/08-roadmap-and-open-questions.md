@@ -21,7 +21,7 @@ All roadmap items below are **Proposed**. The repository contains no roadmap fil
 | Data | In-memory catalog/carts; JSON file store; Prisma/Mongo schema unused |
 | Observability | No logs, metrics, traces, AI audit, cost tracking (`tokens_used` = 0) |
 | Quality | Free-text answers unverified; synthetic scores; ASCII-only sanitiser; false-positive filter |
-| Ops | No CI/CD; `gd-demo-app` container reports `unhealthy`; `enthusiast/` not committed (sidecar cannot start from a fresh clone); port mismatch (12000 vs 3000); CSP hard-codes localhost; Helm lacks AI env |
+| Ops | No CI/CD; (fixed: shop and sidecar health checks; Enthusiast UI now starts); `enthusiast/` not committed (sidecar cannot start from a fresh clone); port mismatch (12000 vs 3000); CSP hard-codes localhost; Helm lacks AI env |
 
 ## 3. Technical debt
 

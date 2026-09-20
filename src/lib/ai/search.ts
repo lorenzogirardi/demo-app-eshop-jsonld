@@ -1,5 +1,6 @@
 import { mockPrisma } from "@/lib/db/mock-db";
 import { chatJSON, llmModel } from "./llm";
+import { checkScope } from "./scope";
 import { enthusiastBackendEnabled, enthusiastTurn, matchCatalogProducts } from "./enthusiastAgent";
 import {
   deriveCategories,
@@ -151,6 +152,24 @@ export async function aiSearch(
   const includeAiAnswer = options?.include_ai_answer ?? true;
 
   const allProducts = await mockPrisma.product.findMany();
+
+  const scope = await checkScope(query);
+  if (!scope.in_scope) {
+    return {
+      schema_version: "1.0.0",
+      correlation_id: request.correlation_id,
+      success: true,
+      fallback_used: false,
+      ai_answer: scope.reply,
+      reasons: {},
+      followups: [],
+      disclaimer: "The AI search only covers products in this store.",
+      products: [],
+      citations: [],
+      grounding_score: 0,
+      metadata: { provider: "scope-check", model: "none", latency_ms: Date.now() - startTime, tokens_used: 0 },
+    };
+  }
 
   if (enthusiastBackendEnabled()) {
     try {

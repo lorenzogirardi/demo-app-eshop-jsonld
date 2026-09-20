@@ -56,11 +56,14 @@ flowchart LR
   Agent --> API
   Admin --> Web
   Admin --> API
-  API -- chat/completions --> LLM
-  API -- agent conversations, health --> ENT
-  ENT -- pull /api/products/dump --> API
-  ENT -. embeddings/LLM .-> LLM
+  API == "1 · search and chat (main path)" ==> ENT
+  API -. "2 · fallback if Enthusiast fails or is slow" .-> LLM
+  API -. "3 · scope check, catalog enrichment" .-> LLM
+  ENT -- "agent reasoning" --> LLM
+  ENT -- "pulls catalog: /api/products/dump" --> API
 ```
+
+Reading guide: the thick arrow is the main path for AI search and chat (`AI_BACKEND=enthusiast`). The dotted arrows are direct LLM calls made by the shop itself, for three reasons: (2) the fallback when Enthusiast errors or exceeds its 45 s limit (then keyword search as the last resort); (3) the *scope check* that declines non-shopping questions and the *catalog enrichment* workflow, because Enthusiast's enrichment agent processes vendor product sheets and is not enabled in this sidecar. With `AI_BACKEND=direct`, arrow 1 is skipped and arrow 2 becomes the main path. Enthusiast in turn calls the LLM provider for its agent's reasoning.
 
 Not present (so not drawn): payment gateway, OMS, ERP/PIM/CMS/CRM, email, analytics. **Not documented in the repository** whether any is planned.
 
@@ -212,7 +215,7 @@ Reference: `enthusiast/server/eshop_source/__init__.py`. The embedding step is u
 
 | Artefact | What it says | Observation |
 |---|---|---|
-| `Dockerfile` | node:18-alpine multi-stage; standalone server; `PORT 3000` | `HEALTHCHECK` is written as `CMD "curl --fail … || exit 1"` (one quoted string), and Alpine has no `curl` by default → observed `unhealthy` on `docker ps` for `gd-demo-app` (and for `enthusiast-api`, whose own check is separate). Not verified why for the sidecar |
+| `Dockerfile` | node:18-alpine multi-stage; standalone server; `PORT 3000` | The health check was a single quoted `curl` string and Alpine has no `curl`, so `gd-demo-app` showed `unhealthy`; **fixed** with a Node-based check. The sidecar's API check used `/api/config/` (404, and the real route needs a token); **fixed** to `/api/docs/`. That bug also kept `enthusiast-frontend` from ever starting (it waits for a healthy API) and it lacked the `PORT` variable; both **fixed** |
 | `package.json` scripts | `dev`/`start` on port **12000** | Differs from the container port 3000 |
 | `compose.yaml` | Service `gd-demo-app`, port 3000, `.env`, external network `enthusiast-net` | Requires the network to exist |
 | `compose.enthusiast.yml` | Postgres+pgvector, Redis, Enthusiast API (10000), frontend (10001), Celery worker + beat; mounts the custom `eshop_source` | Default credentials with placeholders; `ECL_DJANGO_DEBUG=True` — dev only |

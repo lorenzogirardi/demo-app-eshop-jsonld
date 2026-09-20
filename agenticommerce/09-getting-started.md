@@ -91,7 +91,8 @@ docker compose --env-file .env.enthusiast -f compose.enthusiast.yml down -v
 | Script fails at "Bootstrap" | The Enthusiast API was still starting. Check `docker logs enthusiast-api`, then re-run the script |
 | AI search returns keyword results only | Enthusiast is unreachable or slow (45 s limit) and the shop fell back; check `curl localhost:3000/api/ai/health` and the worker logs. With no valid key the direct LLM also fails |
 | Assistant answers poorly right after start | The catalog import is still running; wait a minute |
-| Shop container shows `unhealthy` in `docker ps` | Known: the Dockerfile health check is faulty; the app itself works (see doc 08) |
+| Chat stops answering after a few messages | Rate limit (10 AI requests per minute per IP by default, `AI_RATE_LIMIT`); wait a minute. Older versions also rejected long assistant replies in the history (fixed) |
+| Enthusiast UI (port 10001) not reachable | Fixed in the current version: the UI needs a healthy API and a `PORT` variable. Re-run `./scripts/setup.sh` after pulling |
 | Wrong links or images in feeds and handoff URLs | `URL` in `.env` does not match the address you use |
 | Answers slow | Expected on `AI_BACKEND=enthusiast`; switch to `direct` for speed |
 

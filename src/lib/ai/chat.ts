@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { mockPrisma } from "@/lib/db/mock-db";
 import { chatJSON } from "./llm";
+import { OUT_OF_SCOPE_CHIPS, checkScope } from "./scope";
 import { enthusiastBackendEnabled, enthusiastTurn, matchCatalogProducts } from "./enthusiastAgent";
 import { catalogLines, classicSearch, toNormalized } from "./search";
 import { SearchQuerySchema, sanitizeQuery } from "./validator";
@@ -13,7 +14,8 @@ export const ChatRequestSchema = z.object({
     .array(
       z.object({
         role: z.enum(["user", "assistant"]),
-        content: z.string().min(1).max(600),
+        // Assistant replies from Enthusiast can be long; they are clipped to 600 characters in validateTurns.
+        content: z.string().min(1).max(4000),
       })
     )
     .min(1)
@@ -29,6 +31,8 @@ export interface ChatReply {
   fallback_used: boolean;
   /** Signed reference to the Enthusiast conversation; send it back with the next message. */
   conversation_ref?: string;
+  /** True when the message was not about shopping and was declined without asking the model. */
+  out_of_scope?: boolean;
   backend?: "enthusiast" | "direct";
 }
 
@@ -57,7 +61,7 @@ export function validateTurns(input: unknown) {
     content:
       m.role === "user"
         ? SearchQuerySchema.parse(sanitizeQuery(m.content))
-        : sanitizeQuery(m.content),
+        : sanitizeQuery(m.content).slice(0, 600),
   }));
 }
 
@@ -68,6 +72,22 @@ export async function assistantChat(
   const all = await mockPrisma.product.findMany();
   const byId = new Map(all.map((p) => [String(p.id), p]));
   const asked = turns.filter((t) => t.role === "assistant").length;
+
+  const lastUser = [...turns].reverse().find((t) => t.role === "user")!.content;
+  const previousAssistant = [...turns].reverse().find((t) => t.role === "assistant")?.content;
+  const scope = await checkScope(lastUser, previousAssistant);
+  if (!scope.in_scope) {
+    return {
+      mode: "ask",
+      reply: scope.reply,
+      quick_replies: OUT_OF_SCOPE_CHIPS,
+      products: [],
+      reasons: {},
+      fallback_used: false,
+      out_of_scope: true,
+      ...(conversationRef ? { conversation_ref: typeof conversationRef === "string" ? conversationRef : undefined } : {}),
+    };
+  }
 
   if (enthusiastBackendEnabled()) {
     try {

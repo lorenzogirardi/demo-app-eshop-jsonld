@@ -52,7 +52,7 @@ docker compose --env-file .env.enthusiast -f compose.enthusiast.yml up -d --buil
 
 echo -n "Waiting for the Enthusiast API"
 for _ in $(seq 1 90); do
-  code="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:10000/api/config/ || true)"
+  code="$(curl -s -o /dev/null -w '%{http_code}' http://localhost:10000/api/docs/ || true)"
   [ "$code" != "000" ] && [ "$code" != "502" ] && break
   echo -n "."; sleep 5
 done; echo

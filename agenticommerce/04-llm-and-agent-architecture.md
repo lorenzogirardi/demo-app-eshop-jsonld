@@ -49,6 +49,10 @@ User text
 
 Context assembly: `catalogLines()` renders `id | name | categories | price | description[0..140]` per product. The **system message carries the catalog**; user turns are appended verbatim after sanitisation. Model parameters: temperature 0.2–0.3, JSON response format, `reasoning: { enabled: false }` (reasoning mode was found to slow DeepSeek several-fold and cause intermittent failures, per `llm.ts` comment).
 
+### 2.1b Scope guard (shopping only)
+
+Both AI search and chat first run a cheap classification (`src/lib/ai/scope.ts`, direct LLM call, 8 s, temperature 0): is the customer's latest message about products, orders, shipping, gifts, styling based on the catalog, or a short shopping follow-up? If not (for example "write a Fibonacci function", maths, general knowledge, requests to change the rules) the shop answers with one short sentence in the customer's language, offers shopping quick replies, and **does not call the shopping model or the agent**. The check **fails open**: if the classifier errors or there is no LLM key, the request continues and the assistants' own prompts still restrict scope (the Enthusiast agent's prompt in `enthusiast/plugins/enthusiast-agent-product-search/.../prompt.py` was extended with the same rule). Cost: about one extra fast call per message. Residual risk: a determined prompt could still get past a classifier; keep the tests in `tests/ai/chat.test.ts` and add adversarial cases.
+
 ### 2.2 Retrieval and ranking
 
 - **Retrieval:** none — the whole catalog is in context. Not scalable beyond a few hundred products (see doc 03 §8).

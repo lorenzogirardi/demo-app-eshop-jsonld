@@ -95,7 +95,8 @@ describe("Enthusiast backend", () => {
     expect(r.products.map((p) => p.name)).toEqual(["Metallic Evening Bag"]);
     expect(r.products[0].price).toBeGreaterThan(100); // catalog price in pence, not the £1 in the text
     expect(calls).toContain("POST /api/conversations/7");
-    expect(chatJSON).not.toHaveBeenCalled();
+    // only the scope check used the LLM; the answer came from the agent
+    expect(vi.mocked(chatJSON)).toHaveBeenCalledTimes(1);
   });
 
   it("search: falls back to the direct LLM when the agent fails", async () => {

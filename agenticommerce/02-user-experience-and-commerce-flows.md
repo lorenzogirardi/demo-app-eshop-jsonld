@@ -134,6 +134,7 @@ The admin UI (488 lines) supports batch generate, inline edit, override, revert,
 | Situation | Behaviour | Where |
 |---|---|---|
 | `AI_ENABLED` not `true` | No AI toggle, no widget; `/api/ai/chat` → 403; `/api/ai/search` answers with classic search | `layout.tsx`, routes |
+| Message not about shopping (code, maths, general questions) | Short refusal in the customer's language + shopping quick replies; no model or agent call (`scope.ts`) | `scope.ts`, `chat.ts`, `search.ts` |
 | Enthusiast error, timeout or reply naming no catalog product | Next step: direct LLM, then keyword search | `search.ts`, `chat.ts` |
 | LLM error, timeout, or no key | Search: classic results, `fallback_used: true`, disclaimer. Chat: keyword list + "assistant is unavailable" | `search.ts`, `chat.ts` |
 | LLM returns unknown ids | Silently dropped (ids re-resolved against catalog) | `byId` maps |

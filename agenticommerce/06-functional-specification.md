@@ -45,6 +45,7 @@ Status labels: **Implemented**, **Partial**, **Not implemented**. Every statemen
 ### UC-03 Assistant conversation
 - **Pre:** `AI_ENABLED=true`. **Trigger:** open widget, type or tap a chip.
 - **Main:** see doc 04 §2 (direct backend) and §2.3 (Enthusiast). On the Enthusiast backend `mode` is `recommend` when the agent names catalog products, else `ask`; there are no quick replies or reasons. Response `mode`: `ask` (no products, 2–4 quick replies) or `recommend` (≤4 products).
+- **Scope:** messages that are not about shopping are declined before any model answers (`out_of_scope: true` in the reply).
 - **Rules:** after 2 assistant turns the model must recommend; the server also forces `recommend` mode.
 - **Exceptions:** 400 invalid input/unsafe text; 403 AI disabled; 429; 500 `Assistant failed`; LLM failure → `fallback_used: true` keyword list.
 - **Acceptance (tests):** fallback returns products from keyword match; clarifying limit enforced (`tests/ai/chat.test.ts`).
@@ -85,7 +86,7 @@ Status labels: **Implemented**, **Partial**, **Not implemented**. Every statemen
 | Method & path | Auth | Request | Success | Errors |
 |---|---|---|---|---|
 | `POST /api/ai/search` | none; AI flag | `{query, filters?{categories,price_min,price_max}, options?{max_results 1–50, timeout_ms 1000–30000, include_ai_answer}}` | `AISearchResponse` (`schema_version 1.0.0`, `correlation_id`, `fallback_used`, `ai_answer?`, `reasons`, `followups`, `disclaimer`, `products[]` (price in pence), `citations`, `grounding_score`, `metadata`) | 400, 429, 500 (body still shaped) |
-| `POST /api/ai/chat` | none; AI flag | `{messages:[{role,content ≤600}] 1–12, conversation_ref?}` | `ChatReply` (+ `conversation_ref`, `backend: "enthusiast"\|"direct"`) | 400, 403, 429, 500 |
+| `POST /api/ai/chat` | none; AI flag | `{messages:[{role, content}] 1–12 (user ≤500 chars; assistant ≤4000, clipped to 600), conversation_ref?}` | `ChatReply` (+ `out_of_scope?`, `conversation_ref`, `backend: "enthusiast"\|"direct"`) | 400, 403, 429, 500 |
 | `GET/POST /api/ai/enrich` | admin token; AI flag | GET: list. POST generate `{product_ids[≤20], fields[]}` or review `{proposal_id, action, notes?, override?, edits?}` | proposals / proposal | 400, 401, 403, 404, 409, 500, 503 |
 | `GET /api/ai/bots` | admin token | — | `{known_bots, counts, visits}` | 401 |
 | `GET /api/ai/health` | none | — | `{status, details, agent?}` (`agent`: id, name, type when the product-search agent is found) | 503 when Enthusiast unreachable |
