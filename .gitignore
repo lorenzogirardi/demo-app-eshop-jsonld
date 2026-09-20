@@ -4,3 +4,8 @@ node_modules
 .env
 .env.*
 .data
+
+# env templates are committed, real env files are not
+!.env.example
+!.env.enthusiast.example
+tsconfig.tsbuildinfo

@@ -41,8 +41,8 @@ Stakeholders to involve: Product, E-commerce, Brand/Legal (AI-generated copy and
 
 | For | Benefit | How (in this repo) |
 |---|---|---|
-| Shopper | Faster, intent-based discovery with a stated reason per product | `reasons` (≤15 words each) + follow-up chips |
-| Shopper | Trust: prices and products always from the catalog | LLM returns ids only; ids re-resolved from catalog (`byId` in `search.ts`, `chat.ts`) |
+| Shopper | Faster, intent-based discovery; on the direct backend a stated reason per product | `reasons` (≤15 words each) + follow-up chips (empty on the Enthusiast backend) |
+| Shopper | Trust: displayed products and prices always from the catalog | Direct backend: LLM returns ids, re-resolved from the catalog. Enthusiast backend: catalog names found in the agent's reply (`matchCatalogProducts`). The free-text answer itself is not fact-checked |
 | Merchant | Discoverability by AI assistants | JSON-LD, `llms.txt`, feeds (Google Merchant RSS), sitemap |
 | Merchant | Safer AI copy | Deterministic checks: length, placeholders, category whitelist, numbers/claims must exist in source |
 | Merchant | Control and auditability | Approve/edit/reject/revert; audit trail (last 500 entries) |
@@ -57,7 +57,7 @@ Detailed in [06-functional-specification.md](06-functional-specification.md).
 | ID | Use case | Status |
 |---|---|---|
 | UC-01 | Classic keyword search | Implemented |
-| UC-02 | AI-assisted search with reasons and follow-ups | Implemented |
+| UC-02 | AI-assisted search (reasons and follow-ups on the direct backend) | Implemented |
 | UC-03 | Conversational assistant (ask ≤2 clarifying questions, then recommend ≤4) | Implemented |
 | UC-04 | Agent catalog search/read via REST | Implemented |
 | UC-05 | Agent tool use via MCP | Implemented |
@@ -80,13 +80,13 @@ The repository **does not measure any of these** (no analytics; AI interactions 
 | Quality | Enrichment first-pass acceptance rate; override rate; revert rate | Derivable from `audit` |
 | Quality | Grounding failures per 100 proposals | Derivable from `validation.issues` |
 | Agent channel | Visits by bot kind (search / user-agent / training); agent→handoff conversion | `botVisits` exists; handoff opens are not tracked |
-| Cost | LLM cost per session; latency p95 | `tokens_used` is always 0 today — **Partial** |
+| Cost | LLM cost per session; latency p95 (about 25 s on the Enthusiast backend vs about 2 s direct) | `tokens_used` is always 0 today — **Partial** |
 | Business | Conversion and AOV of assisted vs unassisted sessions | Needs checkout and analytics |
 
 ## 8. Feature status at a glance
 
-| Existing | Planned / in progress | Hypothesised (not a commitment) |
+| Existing | Partial / not connected | Hypothesised (not a commitment) |
 |---|---|---|
-| AI search, chat, agent API, MCP, feeds, JSON-LD, bot log, enrichment, handoff | Embeddings + Enthusiast retrieval (embeddings currently null); config cleanup; CSP/health-check fixes | Real checkout, accounts, order status tools, human escalation, OAuth for agents, GPT Actions |
+| AI search and chat (Enthusiast agent or direct LLM), agent API, MCP, feeds, JSON-LD, bot log, enrichment, handoff | Embeddings (deliberately excluded); other Enthusiast agents; config cleanup; CSP/health-check fixes | Real checkout, accounts, order status tools, human escalation, OAuth for agents, GPT Actions |
 
-"Planned / in progress" is inferred from `compose.enthusiast.yml`, the Enthusiast plugin and the existing `OLLAMA_EMBEDDING_MODEL` setting. **No roadmap document exists in the repository** — priorities are set in doc 08 as proposals.
+The middle column is inferred from `compose.enthusiast.yml`, the Enthusiast plugins and the unused `OLLAMA_EMBEDDING_MODEL` setting. **No roadmap document exists in the repository**: priorities are set in doc 08 as proposals.

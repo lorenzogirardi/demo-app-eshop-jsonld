@@ -13,7 +13,7 @@ A **single Next.js 14 application** (App Router, `output: "standalone"`) serving
 | Persistence | In-memory mock DB; JSON file store | `src/lib/db/mock-db.ts`, `src/lib/ai/store.ts` |
 | Declared schema | Prisma + MongoDB (unused at runtime) | `prisma/schema.prisma`, `src/lib/db/prisma.ts` |
 | LLM | OpenRouter/OpenAI-compatible `chat/completions`, default model `~deepseek/deepseek-v4-flash-latest` | `src/lib/ai/llm.ts` |
-| Tests | Vitest, 68 tests / 9 files | `tests/ai/` |
+| Tests | Vitest, 77 tests / 10 files | `tests/ai/` |
 | Packaging | Docker (multi-stage), Helm chart | `Dockerfile`, `helm/` |
 
 ## 2. Module map
@@ -147,7 +147,9 @@ Prisma's MongoDB schema (`Product`, `Cart`, `CartItem`, `User`, `Account`, `Sess
 
 ## 6. Main flows
 
-### 6.1 AI search (sequence)
+### 6.1 AI search (sequence, direct backend)
+
+With `AI_BACKEND=enthusiast`, `aiSearch` first runs the Enthusiast conversation flow shown in doc 04 §2.3 and only continues with the steps below if that fails or names no catalog product.
 
 ```mermaid
 sequenceDiagram
@@ -210,7 +212,7 @@ Reference: `enthusiast/server/eshop_source/__init__.py`. The embedding step is u
 
 | Artefact | What it says | Observation |
 |---|---|---|
-| `Dockerfile` | node:18-alpine multi-stage; standalone server; `PORT 3000` | `HEALTHCHECK` is written as `CMD "curl --fail … || exit 1"` (one quoted string), and Alpine has no `curl` by default → likely always unhealthy. **To validate** |
+| `Dockerfile` | node:18-alpine multi-stage; standalone server; `PORT 3000` | `HEALTHCHECK` is written as `CMD "curl --fail … || exit 1"` (one quoted string), and Alpine has no `curl` by default → observed `unhealthy` on `docker ps` for `gd-demo-app` (and for `enthusiast-api`, whose own check is separate). Not verified why for the sidecar |
 | `package.json` scripts | `dev`/`start` on port **12000** | Differs from the container port 3000 |
 | `compose.yaml` | Service `gd-demo-app`, port 3000, `.env`, external network `enthusiast-net` | Requires the network to exist |
 | `compose.enthusiast.yml` | Postgres+pgvector, Redis, Enthusiast API (10000), frontend (10001), Celery worker + beat; mounts the custom `eshop_source` | Default credentials with placeholders; `ECL_DJANGO_DEBUG=True` — dev only |
@@ -242,7 +244,7 @@ Multi-replica caution (Helm has an HPA): rate-limit counters, carts, catalog mut
 | Topic | Current | Risk / note |
 |---|---|---|
 | Prompt size | Entire catalog (96 lines, descriptions cut to 140 chars) in every search/chat call | O(catalog) tokens and latency; breaks at thousands of products → needs retrieval (embeddings) |
-| Latency budget | LLM timeout 45 s (search page), 40 s (chat/enrichment), reasoning disabled | Page render blocks on the LLM; `loading.tsx` skeleton exists |
+| Latency budget | Enthusiast agent timeout 45 s (`ENTHUSIAST_TIMEOUT_MS`), then direct LLM 45 s (search page) / 40 s (chat, enrichment), reasoning disabled | Worst case the two attempts add up before the fallback; observed agent latency about 25 s, one Celery worker serialises tasks; `loading.tsx` skeleton exists |
 | Fallbacks | Search and chat fall back to keyword search on any LLM error | Good; failures are not logged |
 | Rate limiting | In-memory, per IP from `x-forwarded-for` | Spoofable if not behind a trusted proxy; per replica; map cleanup at >1000 keys |
 | Caching | Agent REST: `Cache-Control: public, max-age=60`; feeds/llms: 300 s | No cache for LLM results |

@@ -17,7 +17,9 @@ The Node app does **not** implement its own agentic orchestrator. With `AI_BACKE
 | LLM audit logging | **Not implemented** (except enrichment audit) | `store.ts` |
 | Evaluator / LLM-as-judge | **Not implemented**; deterministic checks only | `checkProposal` |
 
-## 2. Request lifecycle (chat)
+## 2. Request lifecycle (chat, direct backend)
+
+On the Enthusiast backend `assistantChat` first calls `enthusiastTurn` (see §2.3); the steps below run when `AI_BACKEND=direct` or as the fallback.
 
 ```
 User text
@@ -50,7 +52,7 @@ Context assembly: `catalogLines()` renders `id | name | categories | price | des
 ### 2.2 Retrieval and ranking
 
 - **Retrieval:** none — the whole catalog is in context. Not scalable beyond a few hundred products (see doc 03 §8).
-- **Ranking:** delegated to the model. `citations[].relevance_score` and `grounding_score` in the search response are **synthetic** (`1 − 0.1·rank`, floor 0.5; mean of those), *not* similarity or attribution scores. Treat them as decorative until replaced.
+- **Ranking:** delegated to the model or agent. `citations[].relevance_score` and `grounding_score` in the search response are **synthetic** (`1 − 0.1·rank`, floor 0.5, mean of those; the Enthusiast path fixes `grounding_score` at 1 because every shown product exists in the catalog), *not* similarity or attribution scores. Treat them as decorative until replaced.
 - **Classic/agent search:** deterministic word scoring (name ×2, description ×1, category ×1) in `agentApi.searchProducts`; substring match in `classicSearch`.
 
 ### 2.3 Where Enthusiast fits
@@ -111,11 +113,11 @@ Not implemented: stock/availability (every product is `in_stock: true` — no da
 
 | Risk | Control in code | Residual gap |
 |---|---|---|
-| Prompt injection via query | Regex blocklist (13 patterns), markup stripping, 500-char cap; prompts declare catalog/conversation as data | Regex filters are easy to evade; **forged assistant turns**: history comes from the client and `assistant` messages are only stripped, not checked for injection patterns |
+| Prompt injection via query | Regex blocklist (13 patterns), markup stripping, 500-char cap; our prompts declare catalog/conversation as data. **The Enthusiast agent uses its own upstream prompt (`enthusiast_agent_product_search/prompt.py`), which has no such rule**, so on that backend only the input filter protects | Regex filters are easy to evade; **forged assistant turns**: history comes from the client and `assistant` messages are only stripped, not checked for injection patterns |
 | Prompt injection via catalog text | Data/instruction separation in prompt; JSON-only output; ids re-validated | Enrichment or admin-added descriptions are trusted; a malicious description could still steer ranking |
-| Hallucinated products/prices | Ids re-resolved; price and fields always from catalog | Free-text `answer`/`reply` and `reasons` are unchecked and may state unsupported facts |
+| Hallucinated products/prices | Ids re-resolved (direct) or catalog names matched (Enthusiast); price and fields always from catalog | Free-text `answer`/`reply` and `reasons` are unchecked and may state unsupported facts |
 | Hallucinated catalog copy | `checkProposal`: length bounds, placeholder regex, category whitelist, **numbers and claim words (warranty, made in, luxury, premium, …) must appear in the source text** | Heuristic; reviewer must still read; override allowed |
-| Excess autonomy / irreversible action | Model has no tools and no write path; enrichment requires human approval; cart needs human click | None for current scope |
+| Excess autonomy / irreversible action | Direct model has no tools; Enthusiast's agent has read-only catalog search tools; neither has a write path; enrichment requires human approval; cart needs human click | None for current scope |
 | PII leakage | Only public product data and the user's own text are sent; sensitive-word filter | The user's free text can contain PII and is forwarded to a third-party LLM; no notice or redaction — see doc 07 |
 | Cost abuse | `AI_ENABLED` flag, rate limit, `max_tokens`, timeouts | Per-replica in-memory counters; no budget cap |
 | Idempotency | Cart preview and generation are stateless; approval refuses non-draft proposals | n/a |
@@ -129,10 +131,11 @@ Not implemented: stock/availability (every product is `in_stock: true` — no da
 | Missing API key / non-2xx / timeout / non-JSON | `chatJSON` throws → callers catch **all** errors → keyword fallback with `fallback_used: true`. The cause is not logged. |
 | Model returns no valid ids | Empty product list; chat still returns its reply; forced recommend logic may produce an empty recommendation |
 | `OPENAI_API_KEY` set without base URL | `llm.ts` still posts to the OpenRouter base URL by default, so an OpenAI key would be rejected (**Partial**; set `OPENROUTER_API_BASE`) |
+| Enthusiast error, timeout (45 s), no agent found, or reply names no catalog product | Falls through to the direct LLM, then keyword search; cause is not logged |
 | Enrichment: model returns nothing usable | 500 with message; per-product errors in batch results |
 | Enrichment: checks fail | Approve blocked (409) unless `override: true` |
 
-## 6. Full agentic request cycle (as implemented)
+## 6. Full request cycle (direct backend; Enthusiast flow in §2.3)
 
 ```mermaid
 sequenceDiagram

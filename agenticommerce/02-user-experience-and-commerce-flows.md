@@ -38,6 +38,8 @@ flowchart TD
   J --> L[Product page]
 ```
 
+With `AI_BACKEND=enthusiast` the request goes to Enthusiast's Product Search agent first (about 25 s; the page shows the `loading.tsx` skeleton meanwhile) and the answer is plain text with no per-product reasons or follow-up chips; on failure it falls back to the direct LLM (reasons and chips present), then to keyword results. In the worst case the two AI attempts add up (about 45 s + 45 s) before the fallback renders.
+
 What the shopper sees: an info banner *"AI-powered search results. Verify prices before purchasing."*, an "AI Response" box, "Refine:" chips, and cards with a one-line reason. Prices always come from the catalog.
 
 **Caveat (observed):** input is stripped to ASCII-safe characters (`sanitizeQuery` uses `\w`), so accented letters are removed. Italian/French queries lose characters such as `è`, `à` — **Partial** for a multilingual experience.
@@ -62,10 +64,12 @@ stateDiagram-v2
   FallbackList --> [*]: shopper leaves or retries
 ```
 
+*The rules below describe the direct backend. On the Enthusiast backend the agent decides when to ask: `mode` is `recommend` when its reply names catalog products, else `ask`; there are no quick-reply chips, the reply is longer plain text (up to 1500 characters) and the conversation continues server-side through a signed `conversation_ref`.*
+
 - **Ask mode:** one short question + 2–4 tappable quick replies, no products.
 - **Recommend mode:** 1–4 products, each with a reason (≤15 words), reply ≤60 words, in the customer's language.
 - **Forced recommendation** after `MAX_CLARIFYING_QUESTIONS = 2` (`src/lib/ai/chat.ts`).
-- **Memory:** last 12 turns, kept in `sessionStorage` (`assistant-chat-v1`); the server is stateless.
+- **Memory:** last 12 turns in `sessionStorage` (`assistant-chat-v1`). Direct backend: the server is stateless and resends the turns. Enthusiast backend: the conversation lives in Enthusiast; the `conversation_ref` is held in component state only, so a page reload starts a new Enthusiast conversation while the old bubbles remain visible.
 - **Reset** clears the conversation.
 
 ## 4. Journey C — Delegated shopping through an external assistant
@@ -130,6 +134,7 @@ The admin UI (488 lines) supports batch generate, inline edit, override, revert,
 | Situation | Behaviour | Where |
 |---|---|---|
 | `AI_ENABLED` not `true` | No AI toggle, no widget; `/api/ai/chat` → 403; `/api/ai/search` answers with classic search | `layout.tsx`, routes |
+| Enthusiast error, timeout or reply naming no catalog product | Next step: direct LLM, then keyword search | `search.ts`, `chat.ts` |
 | LLM error, timeout, or no key | Search: classic results, `fallback_used: true`, disclaimer. Chat: keyword list + "assistant is unavailable" | `search.ts`, `chat.ts` |
 | LLM returns unknown ids | Silently dropped (ids re-resolved against catalog) | `byId` maps |
 | Query contains injection pattern or sensitive word | 400 with *"Query contains potentially unsafe content"* / *"…sensitive information"* | `validator.ts` |

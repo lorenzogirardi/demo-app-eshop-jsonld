@@ -15,13 +15,13 @@ All roadmap items below are **Proposed**. The repository contains no roadmap fil
 
 | Area | Gap |
 |---|---|
-| Agentic | No orchestrator, tool calling, retrieval or memory beyond 12 client turns |
+| Agentic | No orchestrator in Node (delegated to Enthusiast's Product Search agent, opt-in, ~25 s); no retrieval/embeddings; direct-path memory is 12 client turns |
 | Commerce | No checkout, orders, payment, stock, shipping, tax, post-sale |
 | Identity | Mock session; shared admin token; no agent identity |
 | Data | In-memory catalog/carts; JSON file store; Prisma/Mongo schema unused |
 | Observability | No logs, metrics, traces, AI audit, cost tracking (`tokens_used` = 0) |
 | Quality | Free-text answers unverified; synthetic scores; ASCII-only sanitiser; false-positive filter |
-| Ops | No CI/CD; broken/unclear health check; port mismatch (12000 vs 3000); CSP hard-codes localhost; Helm lacks AI env |
+| Ops | No CI/CD; `gd-demo-app` container reports `unhealthy`; `enthusiast/` not committed (sidecar cannot start from a fresh clone); port mismatch (12000 vs 3000); CSP hard-codes localhost; Helm lacks AI env |
 
 ## 3. Technical debt
 
@@ -33,20 +33,20 @@ All roadmap items below are **Proposed**. The repository contains no roadmap fil
 6. Global mutable singletons (`store.ts`, `mock-db.ts`) tied to a single process.
 7. Doc/code drift in `docs/threat-model.md` and `docs/data-classification.md`.
 8. `enthusiast/` vendored and untracked; no version pin.
-9. Uncommitted work: most agent features exist only in the working tree.
+9. The Enthusiast checkout and its custom `eshop_source` plugin are untracked, so the sidecar is not reproducible from the repository.
 
 ## 4. Roadmap (Now / Next / Later)
 
 ### Now — make the demo safe and honest (days)
 | # | Item | Why |
 |---|---|---|
-| N1 | Validate assistant turns for injection; move history validation server-side | T1 |
+| N1 | Validate assistant turns for injection; move history validation server-side; harden the Enthusiast agent prompt | T1 |
 | N2 | Close `/add-product`; fail closed for admin and dump tokens; drop hard-coded secret | T5, T9, T10 |
 | N3 | Report real token usage in responses (provider/model labels are now correct) | Accuracy |
 | N4 | Fix Dockerfile health check and port alignment; make CSP `connect-src` environment-driven | Ops |
 | N5 | Unicode-aware sanitiser; narrower sensitive-word logic | Multilingual UX |
 | N6 | Surface "availability not guaranteed" in OpenAPI/MCP descriptions | T6 |
-| N7 | Commit the work; add CI running `npm test`, lint, build | Governance |
+| N7 | Add CI running `npm test`, lint, build; ship the `eshop_source` plugin with the repo (vendor, submodule or tracked folder) | Governance, reproducibility |
 | N8 | Update threat model and data classification to match code | Drift |
 
 ### Next — build the agentic core (weeks)

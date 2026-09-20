@@ -2,7 +2,7 @@
 
 **Project:** GD Platform Engineering demo e-shop (`package.json` name `demo-app`, v0.1.0)
 **Stack:** Next.js 14 (App Router) · TypeScript · Tailwind/daisyUI · Zod · Vitest
-**Documentation version:** 1.0 · **Date:** 2026-09-19 · **Basis:** working tree of `main` (uncommitted changes included)
+**Documentation version:** 1.1 · **Date:** 2026-09-20 · **Basis:** branch `feature/agentic-commerce` (commit `c239d77`); the vendored `enthusiast/` checkout is not part of the commit
 
 ## What this project is
 
@@ -12,7 +12,7 @@ A Node.js/Next.js demo storefront (clothing and accessories, 96 products, GBP) t
 2. **Exposes the shop to external AI agents** — REST catalog API, OpenAPI description, an MCP server, `llms.txt`, product feeds, schema.org JSON-LD, and a bot-aware `robots.txt`.
 3. **Uses an LLM for catalog enrichment with human approval** — an admin workflow that proposes descriptions/SEO/categories, validates them against the source text, and requires a human to approve or revert.
 
-[Enthusiast](https://github.com/upsidelab/enthusiast) is used as a **conceptual and technical reference** and as an **optional sidecar**. See the honesty note below.
+[Enthusiast](https://github.com/upsidelab/enthusiast) is used as a **conceptual and technical reference** and as a **sidecar** that can answer AI search and chat (`AI_BACKEND=enthusiast`). See the honesty note below.
 
 ## Honesty note: what is and is not implemented
 
@@ -67,8 +67,8 @@ Automated tests: 77 Vitest tests in 10 files, all passing at the documentation d
 
 ## Main assumptions
 
-1. The working tree, not the last commit, is the source of truth (most agent features are uncommitted).
-2. `enthusiast/` is an untracked checkout of the upstream repository plus one custom plugin (`eshop_source`); upstream capabilities are cited only as reference.
+1. The code on the branch above is the source of truth. Runtime observations (container health, Enthusiast data set/agent, ~25 s agent latency) come from the local Docker stack on 2026-09-19/20 and are marked as such.
+2. `enthusiast/` is an untracked local checkout of the upstream repository plus one custom plugin (`eshop_source`). Because it is not committed, `compose.enthusiast.yml` cannot start the sidecar from a fresh clone.
 3. `docs/threat-model.md` and `docs/data-classification.md` describe intended controls; several differ from the code (see doc 07, "Documentation drift").
 4. Real deployment topology beyond `compose.yaml`, `compose.enthusiast.yml` and `helm/` is **Not documented in the repository**.
 

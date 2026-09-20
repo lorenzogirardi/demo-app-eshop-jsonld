@@ -1,6 +1,6 @@
 # 07 — Security, Privacy and Governance
 
-Scope: the Node app as of 2026-09-19. This is a review of the *code*, not a penetration test. No secret values are reproduced.
+Scope: the Node app as of 2026-09-20 (commit `c239d77`). This is a review of the *code*, not a penetration test. No secret values are reproduced.
 
 ## 1. Threat overview
 
@@ -8,7 +8,7 @@ Scope: the Node app as of 2026-09-19. This is a review of the *code*, not a pene
 |---|---|---|---|---|---|
 | T1 | **Prompt injection** via user text | `/api/ai/chat`, `/api/ai/search` (on the Enthusiast backend assistant turns are not forwarded) | 13-pattern regex, markup stripping, prompt says content is data (`validator.ts`, prompts) | Regex evasion; **client-supplied `assistant` turns skip the injection check** (`validateTurns`); AI-search page calls `aiSearch` without the validator | High |
 | T2 | Injection via catalog/enrichment text | Prompts include descriptions | Data/instruction rule; ids re-resolved | Product text from `add-product` (open) or enrichment flows into prompts and pages | Medium |
-| T3 | **PII leakage** to LLM provider | Chat/search text sent to OpenRouter-compatible API | Filter blocks words like "password", "credit card"; no cart/session data in prompts | Users can type names, addresses, emails; no redaction, no privacy notice, provider retention unknown | High |
+| T3 | **PII leakage** to LLM provider | Chat/search text sent to OpenRouter-compatible API, and on the Enthusiast backend also stored in Enthusiast's Postgres as conversation history | Filter blocks words like "password", "credit card"; no cart/session data in prompts | Users can type names, addresses, emails; no redaction, no privacy notice, provider retention unknown | High |
 | T4 | **Abuse of tool calling** by agents | REST/MCP | Read-only tools; validation; caps | No auth, no quotas; scraping and cost via the shared IP bucket | Medium |
 | T5 | Unauthorized data access | Admin APIs/UIs | `ADMIN_TOKEN` with constant-time compare (`adminAuth.ts`) | If token unset, endpoints are open outside production; single shared secret; token kept in `sessionStorage`; `/add-product` open (mock session) | High |
 | T6 | Price/stock errors | Agent and AI answers | Server-side pricing; ids from catalog | `in_stock` is always true; free-text may quote wrong facts | Medium |
@@ -55,7 +55,7 @@ Update these documents or the code so they agree.
 | Topic | Current | Requirement |
 |---|---|---|
 | Personal data processed | Chat/search text (browser → shop → LLM provider); cart cookie; bot UA strings; mock user | Record purposes and lawful basis (**To validate with Legal**) |
-| Third-party processor | OpenRouter (and the model vendor behind it) | DPA, retention/training opt-out, region (**To validate**) |
+| Third-party processor | OpenRouter (and the model vendor behind it); Enthusiast sidecar stores conversations (retention not configured) | DPA, retention/training opt-out, region, conversation retention in Enthusiast (**To validate**) |
 | Client storage | Chat history in `sessionStorage` (cleared on tab close); admin token in `sessionStorage` | Disclose; keep out of persistent storage |
 | Server logs of prompts | None (no logging) | If added: redact PII, short retention, access control |
 | Consent | No banner/notice for AI use | Provide "AI assistant" notice and link to policy before first message |
@@ -89,7 +89,8 @@ Security
 - [ ] Replace mock session; real authN/authZ, RBAC for admin and product creation
 - [ ] Remove hard-coded secret; load from environment/secret manager
 - [ ] Admin and dump endpoints fail closed without a token
-- [ ] Validate assistant turns or hold history server-side
+- [ ] Validate assistant turns on the direct backend (the Enthusiast backend does not forward them) or hold history server-side
+- [ ] Give the Enthusiast agent an injection-resistant prompt; separate `ENTHUSIAST_TOKEN` from the dump token; change sidecar default credentials
 - [ ] Trusted-proxy handling for client IP; shared rate limiter (Redis) for multi-replica
 - [ ] Tighten CSP (remove `unsafe-eval`, nonce scripts, environment-driven `connect-src`)
 - [ ] Fix `HEALTHCHECK`; run image scan; use `npm ci`

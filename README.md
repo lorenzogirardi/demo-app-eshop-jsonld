@@ -1,5 +1,22 @@
 # Platform Engineering Demo App
 
+## Quick start (fresh clone)
+
+Requires Docker (with Compose v2), `openssl` and `curl`. The only value you supply is your OpenRouter API key.
+
+```bash
+git clone -b feature/agentic-commerce git@github.com:lorenzogirardi/demo-app-eshop-jsonld.git
+cd demo-app-eshop-jsonld
+OPENROUTER_API_KEY=sk-or-... ./scripts/setup.sh     # or run without the variable and paste the key when asked
+```
+
+The script creates `.env` and `.env.enthusiast` (random secrets, your key; both git-ignored), builds and starts the
+Enthusiast sidecar and the shop, bootstraps Enthusiast (API token, data set, agent) and imports the catalog.
+The first build takes several minutes. Then open http://localhost:3000.
+Re-running the script is safe. Documentation: `agenticommerce/README.md`.
+
+To use only the direct LLM (no Enthusiast), set `AI_BACKEND=direct` in `.env` and restart the shop.
+
 ## Overview
 This is a demo e-commerce application built with Next.js, React, and TypeScript. It showcases a simple online shopping experience with product browsing, cart functionality, and checkout process.
 

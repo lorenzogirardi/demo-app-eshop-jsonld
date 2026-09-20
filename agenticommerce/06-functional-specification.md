@@ -37,8 +37,8 @@ Status labels: **Implemented**, **Partial**, **Not implemented**. Every statemen
 
 ### UC-02 AI search
 - **Trigger:** `/search?query=…&ai=true` with `AI_ENABLED=true`.
-- **Main:** `aiSearch` sends catalog + query to the LLM; response ids are mapped to catalog products (max 20); page shows answer, reasons, chips, ItemList JSON-LD.
-- **Alt A:** LLM fails → classic results, `fallback_used: true`.
+- **Main:** with `AI_BACKEND=enthusiast`, `aiSearch` asks the Enthusiast Product Search agent and maps catalog names in its reply to products; otherwise (or on failure) it sends catalog + query to the LLM and maps returned ids (max 20). The page shows answer, reasons and chips (direct path only) and ItemList JSON-LD.
+- **Alt A:** Enthusiast fails → direct LLM; LLM fails too → classic results, `fallback_used: true`.
 - **Alt B:** AI disabled → classic search regardless of `ai=true`.
 - **Post:** none stored. **Acceptance:** every displayed product exists in the catalog; every displayed price equals the catalog price; disclaimer visible.
 
@@ -88,7 +88,7 @@ Status labels: **Implemented**, **Partial**, **Not implemented**. Every statemen
 | `POST /api/ai/chat` | none; AI flag | `{messages:[{role,content ≤600}] 1–12, conversation_ref?}` | `ChatReply` (+ `conversation_ref`, `backend: "enthusiast"\|"direct"`) | 400, 403, 429, 500 |
 | `GET/POST /api/ai/enrich` | admin token; AI flag | GET: list. POST generate `{product_ids[≤20], fields[]}` or review `{proposal_id, action, notes?, override?, edits?}` | proposals / proposal | 400, 401, 403, 404, 409, 500, 503 |
 | `GET /api/ai/bots` | admin token | — | `{known_bots, counts, visits}` | 401 |
-| `GET /api/ai/health` | none | — | `{status, details}` | 503 when Enthusiast unreachable |
+| `GET /api/ai/health` | none | — | `{status, details, agent?}` (`agent`: id, name, type when the product-search agent is found) | 503 when Enthusiast unreachable |
 | `GET /api/products` | none | query params | `{total, products[], limit, offset}` | 400 |
 | `GET /api/products/{id}` | none | — | product | 404 |
 | `POST /api/cart/preview` | none | `{items[]}` | preview (see doc 05) | 400 |
@@ -100,7 +100,7 @@ Server actions: `setProductQuantity`, `confirmItems` (handoff), `addProduct`, na
 
 **Events:** `CatalogUpdateEvent` (`product.created|updated|deleted`) is *typed* in `src/lib/ai/types.ts` but **no code emits or consumes it** — Not implemented (Enthusiast syncs by pulling the dump).
 
-**Contract inconsistencies to fix:** price units differ (pence in `/api/ai/*` and dump, pounds in agent API); `/api/ai/search` validation limits `timeout_ms` to ≤30 s while the search page passes 45 s directly.
+**Contract inconsistencies to fix:** price units differ (pence in `/api/ai/*` and dump, pounds in agent API); `/api/ai/search` validation limits `timeout_ms` to ≤30 s while the search page passes 45 s directly; the Enthusiast path ignores `timeout_ms` and uses `ENTHUSIAST_TIMEOUT_MS`.
 
 ## 5. Configuration (environment)
 
