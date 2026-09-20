@@ -18,7 +18,7 @@ Re-running the script is safe. Documentation: `agenticommerce/README.md`.
 To use only the direct LLM (no Enthusiast), set `AI_BACKEND=direct` in `.env` and restart the shop.
 
 ## Overview
-This is a demo e-commerce application built with Next.js, React, and TypeScript. It showcases a simple online shopping experience with product browsing, cart functionality, and checkout process.
+This is a demo e-commerce application built with Next.js, React, and TypeScript. It showcases a simple online shopping experience with product browsing and a cart (there is no checkout: the Checkout button is a placeholder), and has been extended with AI search, a shopping assistant and an agent-ready surface (REST/OpenAPI/MCP, llms.txt, feeds, JSON-LD). See `agenticommerce/README.md`.
 
 ## Demo Mode Setup
 This application has been configured to run in demo mode with the following features:
@@ -28,6 +28,8 @@ This application has been configured to run in demo mode with the following feat
 - Local cart functionality using cookies
 
 ## How to Run
+Full demo with AI (shop + Enthusiast): see *Quick start* above. Shop only, without Docker (AI features off unless you configure `.env`):
+
 1. Install dependencies:
    ```
    npm install
@@ -41,8 +43,9 @@ This application has been configured to run in demo mode with the following feat
 
 ## Key Features
 - Product browsing with sample images
-- Shopping cart functionality
-- Checkout process
+- Shopping cart functionality (no checkout)
+- AI search and shopping assistant (optional, needs an OpenRouter key)
+- Agent-ready: REST API, OpenAPI, MCP server, llms.txt, product feeds, schema.org JSON-LD
 - Responsive design
 
 ## Technical Implementation

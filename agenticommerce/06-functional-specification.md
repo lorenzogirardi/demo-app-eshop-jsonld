@@ -40,6 +40,7 @@ Status labels: **Implemented**, **Partial**, **Not implemented**. Every statemen
 - **Main:** with `AI_BACKEND=enthusiast`, `aiSearch` asks the Enthusiast Product Search agent and maps catalog names in its reply to products; otherwise (or on failure) it sends catalog + query to the LLM and maps returned ids (max 20). The page shows answer, reasons and chips (direct path only) and ItemList JSON-LD.
 - **Alt A:** Enthusiast fails → direct LLM; LLM fails too → classic results, `fallback_used: true`.
 - **Alt B:** AI disabled → classic search regardless of `ai=true`.
+- **Alt C:** the query is not about shopping → answer with a short refusal and no products (`metadata.provider: "scope-check"`).
 - **Post:** none stored. **Acceptance:** every displayed product exists in the catalog; every displayed price equals the catalog price; disclaimer visible.
 
 ### UC-03 Assistant conversation
@@ -48,7 +49,7 @@ Status labels: **Implemented**, **Partial**, **Not implemented**. Every statemen
 - **Scope:** messages that are not about shopping are declined before any model answers (`out_of_scope: true` in the reply).
 - **Rules:** after 2 assistant turns the model must recommend; the server also forces `recommend` mode.
 - **Exceptions:** 400 invalid input/unsafe text; 403 AI disabled; 429; 500 `Assistant failed`; LLM failure → `fallback_used: true` keyword list.
-- **Acceptance (tests):** fallback returns products from keyword match; clarifying limit enforced (`tests/ai/chat.test.ts`).
+- **Acceptance (tests):** fallback returns products from keyword match; clarifying limit enforced; a non-shopping request is declined without calling the shopping model; long assistant replies in the history are accepted and clipped (`tests/ai/chat.test.ts`).
 
 ### UC-04 Agent product search (REST)
 - **Trigger:** `GET /api/products?...`. **Main:** validated query → word-scored search → paged result. **Exceptions:** 400, 429.
@@ -134,8 +135,8 @@ Values are never reproduced here.
 | Persistence | Not met (in-memory) | Real DB for catalog, carts, proposals, audit |
 | Security | Demo grade | See doc 07 checklist |
 | Accessibility | Partly addressed | WCAG audit |
-| Test coverage | 77 unit/contract tests | Add route-level, e2e and LLM-eval runs |
+| Test coverage | 80 unit/contract tests | Add route-level, e2e and LLM-eval runs |
 
 ## 7. Tests (evidence)
 
-`npm test` → 10 files, 77 tests passing: config and types, validator, categories and dump contract, classic search and normalisation, evaluation dataset (`evaluation-data.ts`, classic smoke tests and an AI-readiness check), agent API + MCP + discovery files, chat, enrichment, JSON-LD, Enthusiast backend (mocked Enthusiast API: name matching, signed refs, fallbacks). **LLM calls are mocked**; no test runs a live model. No end-to-end, load or security tests. No CI configuration exists in the repository.
+`npm test` → 10 files, 80 tests passing: config and types, validator, categories and dump contract, classic search and normalisation, evaluation dataset (`evaluation-data.ts`, classic smoke tests and an AI-readiness check), agent API + MCP + discovery files, chat (including the scope guard and long-history handling), enrichment, JSON-LD, Enthusiast backend (mocked Enthusiast API: name matching, signed refs, fallbacks). **LLM calls are mocked**; no test runs a live model. No end-to-end, load or security tests. No CI configuration exists in the repository.
