@@ -47,6 +47,7 @@ Key facts a reader must not miss:
 | [06-functional-specification.md](06-functional-specification.md) | Engineers, QA, analysts | 25 min |
 | [07-security-privacy-and-governance.md](07-security-privacy-and-governance.md) | Security, legal, compliance | 15 min |
 | [08-roadmap-and-open-questions.md](08-roadmap-and-open-questions.md) | Everyone deciding what is next | 10 min |
+| [09-getting-started.md](09-getting-started.md) | Anyone who wants to run the demo on a new machine | 5 min |
 | [presentation.html](presentation.html) | Stakeholder briefing (open in a browser; arrow keys) | 15 min |
 
 ## Maturity snapshot
