@@ -11,7 +11,7 @@ export default function UserMenuButton({ session }: UserMenuButtonProps) {
   // Always use a mock user with an avatar from the internet
   const mockUser = {
     name: "Demo User",
-    image: "https://i.pravatar.cc/150?img=3"
+    image: "https://ui-avatars.com/api/?name=Demo+User&background=0D8ABC&color=fff&size=150"
   };
 
   return (

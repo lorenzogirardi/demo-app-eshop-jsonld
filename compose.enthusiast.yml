@@ -1,0 +1,166 @@
+services:
+  # PostgreSQL with pgvector for vector storage
+  enthusiast-postgres:
+    image: pgvector/pgvector:pg17
+    container_name: enthusiast-postgres
+    environment:
+      POSTGRES_USER: ${ECL_DB_USER:-enthusiast}
+      POSTGRES_PASSWORD: ${ECL_DB_PASSWORD:-enthusiast}
+      POSTGRES_DB: ${ECL_DB_NAME:-enthusiast}
+    volumes:
+      - enthusiast-pgdata:/var/lib/postgresql/data
+    networks:
+      - enthusiast-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ECL_DB_USER:-enthusiast}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis for Celery broker
+  enthusiast-redis:
+    image: redis:latest
+    container_name: enthusiast-redis
+    networks:
+      - enthusiast-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Enthusiast API (Django + Daphne)
+  enthusiast-api:
+    build:
+      context: ./enthusiast/server
+      dockerfile: Dockerfile
+    container_name: enthusiast-api
+    ports:
+      - "10000:10000"
+    environment:
+      PORT: "10000"
+      RUN_MIGRATIONS: "True"
+      ECL_DB_HOST: enthusiast-postgres
+      ECL_DB_PORT: "5432"
+      ECL_DB_USER: ${ECL_DB_USER:-enthusiast}
+      ECL_DB_PASSWORD: ${ECL_DB_PASSWORD:-enthusiast}
+      ECL_DB_NAME: ${ECL_DB_NAME:-enthusiast}
+      ECL_DJANGO_SECRET_KEY: ${ECL_DJANGO_SECRET_KEY:-change-me-in-production}
+      ECL_DJANGO_ALLOWED_HOSTS: '["localhost","127.0.0.1","enthusiast-api"]'
+      ECL_DJANGO_CORS_ALLOWED_ORIGINS: '["http://localhost:3000","http://localhost:10001"]'
+      ECL_DJANGO_DEBUG: "True"
+      ECL_CELERY_BROKER_URL: redis://enthusiast-redis:6379/0
+      ECL_CELERY_RESULT_BACKEND: redis://enthusiast-redis:6379/0
+      ECL_CELERY_TIMEZONE: UTC
+      ECL_ADMIN_EMAIL: ${ECL_ADMIN_EMAIL:-admin@example.com}
+      ECL_ADMIN_PASSWORD: ${ECL_ADMIN_PASSWORD:-changeme}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: https://openrouter.ai/api/v1
+      ESHOP_DUMP_TOKEN: ${ESHOP_DUMP_TOKEN:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+    volumes:
+      - ./enthusiast/server/eshop_source:/app/eshop_source:ro
+      - ./enthusiast/server/pecl/settings.py:/app/pecl/settings.py:ro
+      - ./enthusiast/server/pecl/settings_override.py:/app/pecl/settings_override.py:ro
+    networks:
+      - enthusiast-net
+    depends_on:
+      enthusiast-postgres:
+        condition: service_healthy
+      enthusiast-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:10000/api/config/ || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # Enthusiast Frontend (React SPA)
+  enthusiast-frontend:
+    build:
+      context: ./enthusiast/frontend
+      dockerfile: Dockerfile
+    container_name: enthusiast-frontend
+    ports:
+      - "10001:10001"
+    environment:
+      VITE_API_BASE: http://localhost:10000
+      VITE_WS_BASE: ws://localhost:10000
+    networks:
+      - enthusiast-net
+    depends_on:
+      enthusiast-api:
+        condition: service_healthy
+
+  # Celery Worker (background tasks: sync, embedding, agent execution)
+  enthusiast-worker:
+    build:
+      context: ./enthusiast/server
+      dockerfile: Dockerfile
+    container_name: enthusiast-worker
+    command: celery -A pecl.celery worker -l info
+    environment:
+      RUN_WORKER: "True"
+      ECL_DB_HOST: enthusiast-postgres
+      ECL_DB_PORT: "5432"
+      ECL_DB_USER: ${ECL_DB_USER:-enthusiast}
+      ECL_DB_PASSWORD: ${ECL_DB_PASSWORD:-enthusiast}
+      ECL_DB_NAME: ${ECL_DB_NAME:-enthusiast}
+      ECL_DJANGO_SECRET_KEY: ${ECL_DJANGO_SECRET_KEY:-change-me-in-production}
+      ECL_CELERY_BROKER_URL: redis://enthusiast-redis:6379/0
+      ECL_CELERY_RESULT_BACKEND: redis://enthusiast-redis:6379/0
+      ECL_CELERY_TIMEZONE: UTC
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: https://openrouter.ai/api/v1
+      ESHOP_DUMP_TOKEN: ${ESHOP_DUMP_TOKEN:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+    volumes:
+      - ./enthusiast/server/eshop_source:/app/eshop_source:ro
+      - ./enthusiast/server/pecl/settings.py:/app/pecl/settings.py:ro
+      - ./enthusiast/server/pecl/settings_override.py:/app/pecl/settings_override.py:ro
+    networks:
+      - enthusiast-net
+    depends_on:
+      enthusiast-postgres:
+        condition: service_healthy
+      enthusiast-redis:
+        condition: service_healthy
+
+  # Celery Beat (scheduled tasks)
+  enthusiast-beat:
+    build:
+      context: ./enthusiast/server
+      dockerfile: Dockerfile
+    container_name: enthusiast-beat
+    command: celery -A pecl.celery beat -l info
+    environment:
+      RUN_BEAT: "True"
+      ECL_DB_HOST: enthusiast-postgres
+      ECL_DB_PORT: "5432"
+      ECL_DB_USER: ${ECL_DB_USER:-enthusiast}
+      ECL_DB_PASSWORD: ${ECL_DB_PASSWORD:-enthusiast}
+      ECL_DB_NAME: ${ECL_DB_NAME:-enthusiast}
+      ECL_DJANGO_SECRET_KEY: ${ECL_DJANGO_SECRET_KEY:-change-me-in-production}
+      ECL_CELERY_BROKER_URL: redis://enthusiast-redis:6379/0
+      ECL_CELERY_RESULT_BACKEND: redis://enthusiast-redis:6379/0
+      ECL_CELERY_TIMEZONE: UTC
+    volumes:
+      - ./enthusiast/server/eshop_source:/app/eshop_source:ro
+      - ./enthusiast/server/pecl/settings.py:/app/pecl/settings.py:ro
+      - ./enthusiast/server/pecl/settings_override.py:/app/pecl/settings_override.py:ro
+    networks:
+      - enthusiast-net
+    depends_on:
+      enthusiast-postgres:
+        condition: service_healthy
+      enthusiast-redis:
+        condition: service_healthy
+
+volumes:
+  enthusiast-pgdata:
+
+networks:
+  enthusiast-net:
+    external: true
+    name: enthusiast-net

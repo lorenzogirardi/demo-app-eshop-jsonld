@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+enthusiast
+tests
+docs
+*.test.*
+vitest.config.ts
+compose.yaml
+compose.enthusiast.yml
+.env.*

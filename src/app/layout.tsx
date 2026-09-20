@@ -4,12 +4,18 @@ import "./globals.css";
 import Navbar from "./Navbar/Navbar";
 import Footer from "./Footer";
 import SessionProvider from "./SessionProvider"
+import AssistantChat from "@/components/AssistantChat";
+import { isAIEnabled } from "@/lib/ai/config";
+import { STORE_NAME, siteUrl } from "@/lib/site";
+import { organizationJsonLd, websiteJsonLd, safeJsonLd } from "@/lib/seo/jsonld";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "GD - Platform Engineering",
-  description: "A Gucci Digital Platform Engineering test app",
+  metadataBase: new URL(siteUrl()),
+  title: { default: STORE_NAME, template: `%s` },
+  description: "Clothing and accessories: bags, watches, shoes, scarves, sunglasses. Search in natural language with the AI assistant.",
+  alternates: { types: { "text/plain": "/llms.txt" } },
 };
 
 export default function RootLayout({
@@ -26,6 +32,11 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        {isAIEnabled() && <AssistantChat />}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: safeJsonLd([organizationJsonLd(), websiteJsonLd()]) }}
+        />
         </SessionProvider>
       </body>
     </html>

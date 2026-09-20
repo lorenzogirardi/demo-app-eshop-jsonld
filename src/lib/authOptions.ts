@@ -6,7 +6,7 @@ const mockUser = {
   id: "mock-user-id",
   name: "Demo User",
   email: "demo@example.com",
-  image: "https://i.pravatar.cc/150?img=3"
+  image: "https://ui-avatars.com/api/?name=Demo+User&background=0D8ABC&color=fff&size=150"
 };
 
 // Modified auth options to bypass authentication

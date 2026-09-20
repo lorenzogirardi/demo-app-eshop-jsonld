@@ -9,3 +9,9 @@ services:
       - 3000:3000
     env_file:
       - ./.env
+    networks:
+      - enthusiast-net
+
+networks:
+  enthusiast-net:
+    external: true

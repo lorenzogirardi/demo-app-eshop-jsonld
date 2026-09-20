@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Commerce — Making the shopping experience simpler, more relevant, and more competitive</title>
+<style>
+:root {
+  --bg: #0c0e14;
+  --bg2: #12151e;
+  --panel: #181c28;
+  --panel2: #1e2333;
+  --fg: #f0f2f7;
+  --fg2: #c4c9d8;
+  --mut: #7b839a;
+  --line: #2a2f42;
+  --acc: #c9a24a;
+  --acc2: #e0bb5e;
+  --ok: #3ecf8e;
+  --warn: #f5b84b;
+  --prop: #7c9cff;
+  --bad: #ff6b6b;
+  --grad1: linear-gradient(135deg, #c9a24a 0%, #e0bb5e 100%);
+  --grad2: linear-gradient(135deg, #3ecf8e 0%, #2ea876 100%);
+  --grad3: linear-gradient(135deg, #7c9cff 0%, #5a7de0 100%);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #070910; color: var(--fg); font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+#viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+#stage { width: 1280px; height: 720px; position: relative; transform-origin: center center; flex: none; }
+
+/* Slide base */
+.slide {
+  position: absolute; inset: 0;
+  background: var(--bg);
+  padding: 52px 72px 56px;
+  display: none; flex-direction: column;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.slide.active { display: flex; }
+
+/* Typography */
+h1 { font-size: 52px; line-height: 1.08; letter-spacing: -.025em; font-weight: 800; }
+h2 { font-size: 34px; line-height: 1.15; letter-spacing: -.015em; margin-bottom: 24px; font-weight: 700; }
+h2 small { display: block; font-size: 13px; font-weight: 600; color: var(--acc); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 8px; }
+h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+p, li { font-size: 19px; line-height: 1.45; color: var(--fg); }
+.mut { color: var(--mut); }
+.mut2 { color: var(--fg2); }
+small { font-size: 14px; }
+code { font-size: .85em; background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 4px; }
+
+/* Lists */
+ul { list-style: none; display: grid; gap: 12px; }
+ul li { padding-left: 22px; position: relative; }
+ul li::before { content: ""; position: absolute; left: 0; top: .6em; width: 8px; height: 8px; border-radius: 2px; background: var(--acc); }
+
+/* Grids */
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: 1fr 1fr; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g4 { grid-template-columns: repeat(4, 1fr); }
+.g23 { grid-template-columns: 2fr 1fr; }
+.g32 { grid-template-columns: 1fr 2fr; }
+
+/* Cards */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.card.hl { border-color: var(--acc); background: linear-gradient(160deg, rgba(201,162,74,.06), var(--panel)); }
+.card p, .card li { font-size: 16px; line-height: 1.4; }
+.card h3 { font-size: 17px; }
+
+/* Tags */
+.tag {
+  display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 99px;
+  vertical-align: middle; margin-right: 4px;
+}
+.t-ok { background: rgba(62,207,142,.12); color: var(--ok); border: 1px solid rgba(62,207,142,.3); }
+.t-warn { background: rgba(245,184,75,.12); color: var(--warn); border: 1px solid rgba(245,184,75,.3); }
+.t-prop { background: rgba(124,156,255,.12); color: var(--prop); border: 1px solid rgba(124,156,255,.3); }
+.t-no { background: rgba(255,107,107,.12); color: var(--bad); border: 1px solid rgba(255,107,107,.3); }
+.t-badge { background: rgba(201,162,74,.15); color: var(--acc); border: 1px solid rgba(201,162,74,.3); font-size: 12px; padding: 4px 12px; }
+
+/* Flows */
+.flow { display: flex; align-items: stretch; gap: 8px; margin: 4px 0; }
+.flow-col { flex-direction: column; }
+.node {
+  flex: 1; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px;
+  padding: 14px 12px; font-size: 15px; text-align: center;
+  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+}
+.node b { font-size: 15px; }
+.node span { color: var(--mut); font-size: 12px; line-height: 1.3; }
+.node.hl { border-color: var(--acc); }
+.node.ok { border-color: var(--ok); }
+.node.bad { border-color: var(--bad); opacity: .85; }
+.node.wide { text-align: left; padding: 16px 18px; }
+.arr { align-self: center; color: var(--acc); font-size: 22px; flex: none; display: flex; align-items: center; }
+
+/* Comparison */
+.vs { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.vs-col { display: flex; flex-direction: column; gap: 12px; }
+.vs-label { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 4px; }
+.vs-before { color: var(--mut); }
+.vs-after { color: var(--acc); }
+.vs-step {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 16px; font-size: 15px; display: flex; align-items: flex-start; gap: 10px;
+}
+.vs-step .num {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; flex: none;
+}
+.vs-before .vs-step .num { background: rgba(123,131,154,.2); color: var(--mut); }
+.vs-after .vs-step .num { background: rgba(201,162,74,.15); color: var(--acc); }
+.vs-step-text { flex: 1; }
+
+/* Gap cards */
+.gap-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;
+}
+.gap-card .label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.gap-card .label-today { color: var(--mut); }
+.gap-card .label-effect { color: var(--bad); }
+.gap-card .label-response { color: var(--ok); }
+.gap-card p { font-size: 15px; line-height: 1.4; }
+
+/* KPI table */
+table { width: 100%; border-collapse: collapse; font-size: 16px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { color: var(--acc); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+td { color: var(--fg2); }
+tr:last-child td { border-bottom: none; }
+
+/* Hero */
+.hero-stat { font-size: 48px; font-weight: 800; color: var(--acc); line-height: 1; }
+
+/* Cover */
+.cover {
+  justify-content: center;
+  background: radial-gradient(900px 450px at 85% 15%, rgba(42,53,89,.5) 0, transparent 60%),
+              radial-gradient(600px 300px at 10% 85%, rgba(201,162,74,.08) 0, transparent 60%),
+              linear-gradient(160deg, var(--bg), #0a0d16);
+}
+.cover .kicker {
+  color: var(--acc); letter-spacing: .22em; text-transform: uppercase;
+  font-weight: 700; margin-bottom: 18px; font-size: 14px;
+}
+.cover p { font-size: 22px; color: var(--fg2); margin-top: 20px; max-width: 780px; line-height: 1.5; }
+.cover .sub { font-size: 16px; color: var(--mut); margin-top: 28px; }
+
+/* Section intro */
+.section-intro { justify-content: center; align-items: center; text-align: center; }
+.section-intro h2 { font-size: 42px; max-width: 900px; }
+.section-intro p { font-size: 22px; color: var(--fg2); max-width: 700px; margin-top: 16px; }
+
+/* Badge "To validate" */
+.validate-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(245,184,75,.1); border: 1px solid rgba(245,184,75,.3);
+  color: var(--warn); font-size: 12px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; padding: 4px 12px; border-radius: 99px;
+  margin-left: 8px; vertical-align: middle;
+}
+.validate-badge::before { content: "⚠"; font-size: 12px; }
+
+/* Risk chain */
+.risk-chain {
+  display: flex; align-items: center; gap: 0; margin: 20px 0 10px;
+}
+.risk-step {
+  flex: 1; background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 16px 14px; text-align: center; display: flex; flex-direction: column; gap: 6px;
+}
+.risk-step b { font-size: 15px; }
+.risk-step span { font-size: 12px; color: var(--mut); }
+.risk-step.danger { border-color: var(--bad); background: rgba(255,107,107,.05); }
+.risk-step.danger b { color: var(--bad); }
+.risk-arrow { flex: none; width: 32px; text-align: center; color: var(--bad); font-size: 20px; }
+
+/* Pillars */
+.pillar {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 22px 24px; display: flex; flex-direction: column; gap: 8px;
+}
+.pillar .icon { font-size: 28px; margin-bottom: 4px; }
+.pillar h3 { font-size: 18px; }
+.pillar p { font-size: 15px; color: var(--fg2); line-height: 1.45; }
+
+/* Next steps */
+.step-num {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--grad1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: var(--bg); flex: none;
+}
+.step-item { display: flex; align-items: flex-start; gap: 14px; }
+.step-text { flex: 1; }
+.step-text b { font-size: 16px; }
+.step-text p { font-size: 14px; color: var(--fg2); margin-top: 2px; }
+
+/* Footer */
+.foot {
+  position: absolute; left: 72px; right: 72px; bottom: 14px;
+  font-size: 11px; color: var(--mut);
+  display: flex; justify-content: space-between;
+  border-top: 1px solid var(--line); padding-top: 8px;
+}
+
+/* UI controls */
+#ui {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 20px;
+  background: rgba(7,10,18,.9);
+  border-top: 1px solid var(--line);
+  z-index: 5;
+}
+#ui button {
+  background: var(--panel2); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 7px 14px; font-size: 13px; cursor: pointer;
+  transition: border-color .15s;
+}
+#ui button:hover { border-color: var(--acc); }
+#bar { flex: 1; height: 5px; background: var(--panel2); border-radius: 9px; overflow: hidden; }
+#fill { height: 100%; background: var(--grad1); width: 0; transition: width .25s; }
+#count { font-size: 12px; color: var(--mut); min-width: 50px; text-align: right; }
+#dots { display: flex; gap: 5px; }
+#dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); cursor: pointer; transition: background .15s; }
+#dots i.on { background: var(--acc); }
+@media (max-width: 700px) { #dots { display: none; } }
+
+/* Print */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  html, body { overflow: visible; height: auto; background: #fff; }
+  #ui { display: none; }
+  #viewport { position: static; display: block; }
+  #stage { transform: none !important; width: 1280px; height: auto; }
+  .slide { display: flex !important; position: relative; inset: auto; width: 1280px; height: 720px; page-break-after: always; break-after: page; border: 0; }
+}
+
+/* Utility */
+.mt-s { margin-top: 12px; }
+.mt-m { margin-top: 20px; }
+.mt-l { margin-top: 28px; }
+.mb-s { margin-bottom: 12px; }
+.mb-m { margin-bottom: 20px; }
+.gap-sm { gap: 10px; }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.text-center { text-align: center; }
+.accent { color: var(--acc); }
+.ok { color: var(--ok); }
+.warn { color: var(--warn); }
+.bad { color: var(--bad); }
+.fw700 { font-weight: 700; }
+.w-full { width: 100%; }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+
+<!-- ═══════════════════════════════════════════ SLIDE 1: COVER ═══════════════════════════════════════════ -->
+<section class="slide cover">
+  <div class="kicker">Strategic Initiative</div>
+  <h1>Agentic Commerce</h1>
+  <h1 style="font-size:38px;color:var(--fg2);font-weight:500;margin-top:4px">making the shopping experience simpler, more relevant, and more competitive</h1>
+  <p>Buying behavior is evolving. Customers and AI agents expect conversational, personalized experiences that move quickly from need to decision. This initiative defends the current customer base and unlocks a growth lever.</p>
+  <div class="sub">Agentic Commerce Project · September 2026 · Document for leadership and stakeholders</div>
+  <div class="foot"><span>Source: project documentation · strategic hypothesis to validate</span><span></span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 2: EXECUTIVE SUMMARY ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Executive Summary</small>Three forces, one response</h2>
+  <div class="grid g3 mt-s">
+    <div class="pillar">
+      <div class="icon">🧭</div>
+      <h3>Behavior is evolving</h3>
+      <p>Customers search with their words, expect instant answers, and choose where the experience is simplest.</p>
+    </div>
+    <div class="pillar">
+      <div class="icon">⚡</div>
+      <h3>The current experience has friction</h3>
+      <p>Keyword search, complex catalogs, manual comparison: everything requires more effort than necessary.</p>
+    </div>
+    <div class="pillar">
+      <div class="icon">🛡️</div>
+      <h3>Agentic Commerce is the answer</h3>
+      <p>Transforms e-commerce from a sequence of pages into an assisted experience, protecting conversion, retention, and brand relevance.</p>
+    </div>
+  </div>
+  <div class="card mt-m" style="border-color:var(--acc)">
+    <p><b class="accent">Enthusiast</b> è la base open source che accelera la costruzione di queste capacità: collega catalogo, contenuti e regole commerciali a esperienze conversazionali AI controllabili.</p>
+  </div>
+  <div class="foot"><span>Source: project documentation · Enthusiast documentation</span><span>2</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 3: CAMBIAMENTO ASPETTATIVE ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>The shifting landscape</small>How customer expectations are changing</h2>
+  <div class="grid g2 mt-s">
+    <div class="card">
+      <h3 class="accent">Natural language queries</h3>
+      <p>Customers no longer search for "blue cotton t-shirt 42". They ask: <em>"Something elegant for tonight, under €200"</em>. They expect commerce to understand.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">Less patience for browsing</h3>
+      <p>Filters, categories, manual comparison across dozens of pages: too much effort. Patience for traditional search is shrinking.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">Expectation of guidance and personalization</h3>
+      <p>Customers expect someone — or something — to guide the choice, explain options, and recommend based on context.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">Commerce must stay relevant everywhere</h3>
+      <p>Search increasingly starts from AI assistants. The brand must be findable, understandable, and chosen even in these paths.</p>
+    </div>
+  </div>
+  <p class="mut mt-s" style="font-size:14px">La direzione del mercato aumenta l'aspettativa per esperienze conversazionali e assistite in ogni fase del journey.</p>
+  <div class="foot"><span>Source: project documentation · market observations</span><span>3</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 4: COSTO DELL'INAZIONE ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Il costo dell'inazione</small>What we risk if we don’t act</h2>
+  <div class="risk-chain mt-s">
+    <div class="risk-step">
+      <b>Diffuse experience</b>
+      <span>Customer doesn’t know what to choose</span>
+    </div>
+    <div class="risk-arrow">→</div>
+    <div class="risk-step">
+      <b>Indecision</b>
+      <span>Too much effort, too few answers</span>
+    </div>
+    <div class="risk-arrow">→</div>
+    <div class="risk-step">
+      <b>Abandonment</b>
+      <span>Searches elsewhere or stops searching</span>
+    </div>
+    <div class="risk-arrow">→</div>
+    <div class="risk-step danger">
+      <b>Lower return</b>
+      <span>Customer doesn’t come back</span>
+    </div>
+    <div class="risk-arrow">→</div>
+    <div class="risk-step danger">
+      <b>Competitive vulnerability</b>
+      <span>Chooses a simpler competitor</span>
+    </div>
+  </div>
+  <div class="grid g2 mt-m">
+    <div class="card">
+      <h3>Risk of lost conversion</h3>
+      <p>Esperienze frammentate aumentano l'abbandono nella ricerca e nel carrello. Più passaggi e incertezza = più dropout.</p>
+    </div>
+    <div class="card">
+      <h3>Risk of lower retention</h3>
+      <p>Se il cliente trova un'esperienza più semplice altrove, diminuisce la probabilità di ritorno. La fedeltà si guadagna con meno sforzo.</p>
+    </div>
+    <div class="card">
+      <h3>Rischio di minore frequenza d'acquisto</h3>
+      <p>Scelte complesse si rimandano. Se l'esperienza non facilita la decisione, il cliente acquista meno spesso.</p>
+    </div>
+    <div class="card">
+      <h3>Risk of intermediation</h3>
+      <p>AI agents increasingly mediate the customer’s choice. Without an Agentic presence, the brand may be excluded from the decision path.</p>
+    </div>
+  </div>
+  <p class="mt-s" style="font-size:15px;color:var(--fg2)"><b>Il costo potenziale dell'inazione</b> è la combinazione di queste quattro dinamiche. Mantenere l'attuale base clienti richiede un'esperienza che riduca lo sforzo e aumenti la fiducia.</p>
+  <div class="foot"><span>Source: project documentation · strategic hypothesis to validate con KPI interni</span><span>4</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 5: EXPERIENCE GAPS ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>I gap dell'esperienza attuale</small>Where we are, where we could be</h2>
+  <div class="grid g2 mt-s" style="gap:12px">
+    <div class="gap-card">
+      <span class="label label-today">Today</span>
+      <p>Traditional search: customers must know categories, filters, and catalog terminology.</p>
+      <span class="label label-effect">Customer impact</span>
+      <p>Doesn’t quickly find the right product, especially with vague or subjective requests.</p>
+      <span class="label label-response">With Agentic Commerce</span>
+      <p>A conversational assistant translates the need into a clear, motivated selection.</p>
+    </div>
+    <div class="gap-card">
+      <span class="label label-today">Today</span>
+      <p>Complex catalogs: hard to understand which product truly addresses a need.</p>
+      <span class="label label-effect">Customer impact</span>
+      <p>Manual comparison across dozens of options without contextual explanations.</p>
+      <span class="label label-response">With Agentic Commerce</span>
+      <p>Raccomandazioni con motivazione, ancorate al catalogo e al contesto dell'utente.</p>
+    </div>
+    <div class="gap-card">
+      <span class="label label-today">Today</span>
+      <p>Fragmented experience: search, product pages, support, and post-sale don’t share context.</p>
+      <span class="label label-effect">Customer impact</span>
+      <p>Every interaction starts from scratch, increasing perceived effort.</p>
+      <span class="label label-response">With Agentic Commerce</span>
+      <p>Coherent journey across site, assistance, and conversational channels.</p>
+    </div>
+    <div class="gap-card">
+      <span class="label label-today">Today</span>
+      <p>Repetitive questions: support teams receive requests that could be handled with catalog information.</p>
+      <span class="label label-effect">Customer impact</span>
+      <p>Waiting to get information already available, with inconsistent answers.</p>
+      <span class="label label-response">With Agentic Commerce</span>
+      <p>Automation of repetitive tasks, with human escalation when needed.</p>
+    </div>
+    <div class="gap-card">
+      <span class="label label-today">Today</span>
+      <p>Time to decision: more steps and uncertainty increase abandonment risk.</p>
+      <span class="label label-effect">Customer impact</span>
+      <p>Il percorso dalla scoperta all'acquisto è lungo e pieno di incertezze.</p>
+      <span class="label label-response">With Agentic Commerce</span>
+      <p>Progressive guidance that reduces steps and builds confidence in the choice.</p>
+    </div>
+    <div class="gap-card">
+      <span class="label label-today">Today</span>
+      <p>Agent access: users and platforms are evolving toward conversational interfaces.</p>
+      <span class="label label-effect">Customer impact</span>
+      <p>The brand is absent from paths where customers search with AI assistants.</p>
+      <span class="label label-response">With Agentic Commerce</span>
+      <p>The brand is findable, understandable, and chosen even through external agents.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: project documentation · gaps derived from documentation</span><span>5</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 6: WHAT IS AGENTIC COMMERCE ═══════════════════════════════════════════ -->
+<section class="slide section-intro">
+  <h2>Che cos'è<br><span class="accent">Agentic Commerce</span></h2>
+  <p>Trasforma l'e-commerce da una sequenza di pagine e filtri in un'esperienza assistita. Il cliente può esprimere un bisogno con le proprie parole, ricevere domande utili, confrontare alternative, capire perché una proposta è adatta e avanzare nell'acquisto con meno sforzo.</p>
+  <div class="grid g3 mt-m" style="max-width:960px;width:100%">
+    <div class="card text-center">
+      <h3 class="accent">🔍 Discovery</h3>
+      <p>Conversational search, guided product discovery</p>
+    </div>
+    <div class="card text-center">
+      <h3 class="accent">💬 Guidance</h3>
+      <p>Motivated recommendations and comparisons</p>
+    </div>
+    <div class="card text-center">
+      <h3 class="accent">✅ Decision</h3>
+      <p>Clear explanations, informed action</p>
+    </div>
+  </div>
+  <p class="mt-m mut2" style="font-size:17px;max-width:800px">Non sostituisce necessariamente il sito tradizionale: lo potenzia. Il controllo resta sempre all'utente.</p>
+  <div class="foot"><span>Source: project documentation · strategic definition</span><span>6</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 7: CUSTOMER JOURNEY ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>The customer journey</small>Before vs. with Agentic Commerce</h2>
+  <div class="vs mt-s">
+    <div class="vs-col vs-before">
+      <div class="vs-label">Today</div>
+      <div class="vs-step"><div class="num">1</div><div class="vs-step-text">Keyword search on the site</div></div>
+      <div class="vs-step"><div class="num">2</div><div class="vs-step-text">Manual application of filters and categories</div></div>
+      <div class="vs-step"><div class="num">3</div><div class="vs-step-text">Opening many product pages</div></div>
+      <div class="vs-step"><div class="num">4</div><div class="vs-step-text">Manual comparison across options</div></div>
+      <div class="vs-step"><div class="num">5</div><div class="vs-step-text">Uncertainty about the right choice</div></div>
+      <div class="vs-step"><div class="num">6</div><div class="vs-step-text">Possible abandonment or random pick</div></div>
+    </div>
+    <div class="vs-col vs-after">
+      <div class="vs-label">With Agentic Commerce</div>
+      <div class="vs-step"><div class="num">1</div><div class="vs-step-text">Customer describes the need in their own words</div></div>
+      <div class="vs-step"><div class="num">2</div><div class="vs-step-text">Useful, targeted clarifying questions</div></div>
+      <div class="vs-step"><div class="num">3</div><div class="vs-step-text">Relevant proposals with motivation</div></div>
+      <div class="vs-step"><div class="num">4</div><div class="vs-step-text">Guided comparison and contextual explanations</div></div>
+      <div class="vs-step"><div class="num">5</div><div class="vs-step-text">Il cliente comprende perché una proposta è adatta</div></div>
+      <div class="vs-step"><div class="num">6</div><div class="vs-step-text">Informed action: cart or human consultation</div></div>
+    </div>
+  </div>
+  <p class="mut mt-s" style="font-size:14px">The site remains central and is enhanced, not replaced. Every path removes steps and reduces effort.</p>
+  <div class="foot"><span>Source: project documentation · journey design</span><span>7</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 8: PRODUCT FEATURES ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Capabilities to enable</small>Le capacità che rendono possibile l'Agentic Commerce</h2>
+  <div class="grid g3 mt-s" style="gap:12px">
+    <div class="card">
+      <div class="flex items-center gap-sm mb-s">
+        <span class="tag t-ok">Available</span>
+      </div>
+      <h3>Conversational search</h3>
+      <p>Customer expresses a need in natural language and receives relevant products with motivations.</p>
+    </div>
+    <div class="card">
+      <div class="flex items-center gap-sm mb-s">
+        <span class="tag t-ok">Available</span>
+      </div>
+      <h3>Contextual recommendations</h3>
+      <p>Suggerimenti ancorati al catalogo, con confronto guidato e spiegazione del perché ogni opzione è adatta.</p>
+    </div>
+    <div class="card">
+      <div class="flex items-center gap-sm mb-s">
+        <span class="tag t-ok">Available</span>
+      </div>
+      <h3>Product and service answers</h3>
+      <p>Questions about features, availability, procedures: reliable answers anchored to the company catalog.</p>
+    </div>
+    <div class="card">
+      <div class="flex items-center gap-sm mb-s">
+        <span class="tag t-ok">Available</span>
+      </div>
+      <h3>Discovery prodotto guidata</h3>
+      <p>An assistant guides the customer through navigation, making even large and technical catalogs accessible.</p>
+    </div>
+    <div class="card">
+      <div class="flex items-center gap-sm mb-s">
+        <span class="tag t-prop">In evolution</span>
+      </div>
+      <h3>Pre- and post-purchase support</h3>
+      <p>Affiancamento del supporto prima e dopo l'acquisto, con continuità di contesto.</p>
+    </div>
+    <div class="card">
+      <div class="flex items-center gap-sm mb-s">
+        <span class="tag t-prop">Planned</span>
+      </div>
+      <h3>Brand customization</h3>
+      <p>Tone, rules, and workflows customized by brand. Catalog content enrichment and validation.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: project documentation · feature status</span><span>8</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 9: USE CASES ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Casi d'uso che creano valore</small>Dove l'Agentic Commerce fa la differenza</h2>
+  <div class="grid g3 mt-s" style="gap:14px">
+    <div class="card">
+      <h3 class="accent">Generic request</h3>
+      <p><b class="mut2">Problem:</b> "Something for tonight" doesn’t match any filter.</p>
+      <p><b class="accent">Experience:</b> L'assistente chiede, interpreta, propone.</p>
+      <p><b class="ok">Benefit:</b> Customer finds relevant options with less effort.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">Technical need or constraints</h3>
+      <p><b class="mut2">Problem:</b> Customer has specific needs but doesn’t know which filters to use.</p>
+      <p><b class="accent">Experience:</b> Targeted questions, catalog-anchored answers.</p>
+      <p><b class="ok">Benefit:</b> Informed choice, reduced risk of error.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">Comparing alternatives</h3>
+      <p><b class="mut2">Problem:</b> Decine di opzioni, nessuna spiegazione del perché sceglierne una.</p>
+      <p><b class="accent">Experience:</b> Guided comparison with motivations for each choice.</p>
+      <p><b class="ok">Benefit:</b> Greater confidence in the decision, less indecision.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">Post-purchase</h3>
+      <p><b class="mut2">Problem:</b> Repetitive questions about orders, returns, availability.</p>
+      <p><b class="accent">Experience:</b> Assistant responding with catalog and knowledge base information.</p>
+      <p><b class="ok">Benefit:</b> Reduced tickets, greater satisfaction.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">Incomplete catalog content</h3>
+      <p><b class="mut2">Problem:</b> Descriptions, attributes, and information inconsistent or hard to use.</p>
+      <p><b class="accent">Experience:</b> AI enrichment and validation with human approval.</p>
+      <p><b class="ok">Benefit:</b> Catalogo più completo e affidabile per l'assistente e per il cliente.</p>
+    </div>
+    <div class="card">
+      <h3 class="accent">External AI agent access</h3>
+      <p><b class="mut2">Problem:</b> Customer searches with ChatGPT or Perplexity and the brand is absent.</p>
+      <p><b class="accent">Experience:</b> Catalog is readable and interactive for agents.</p>
+      <p><b class="ok">Benefit:</b> Brand stays relevant even in new discovery channels.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Fonte: documentazione progetto · casi d'uso derivati dalla documentazione</span><span>9</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 10: ENTHUSIAST ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Enthusiast</small>L'acceleratore dell'iniziativa</h2>
+  <div class="grid g23 mt-s">
+    <div>
+      <p style="font-size:20px;color:var(--fg2);margin-bottom:16px">Enthusiast è la base open source per creare agenti AI dedicati all'e-commerce. Consente di collegare l'esperienza conversazionale ai contenuti, al catalogo e alle regole commerciali dell'azienda, con maggiore controllo rispetto a un chatbot generico.</p>
+      <div class="grid g2" style="gap:12px">
+        <div class="card">
+          <h3>Implementation speed</h3>
+          <p>Pre-configured integrations with major e-commerce platforms: Shopify, WooCommerce, Medusa, Shopware, and more.</p>
+        </div>
+        <div class="card">
+          <h3>Adaptability</h3>
+          <p>Compatible with cloud and self-hosted LLM providers. Customizable workflows and agent behavior.</p>
+        </div>
+        <div class="card">
+          <h3>Data and behavior control</h3>
+          <p>I dati restano nell'infrastruttura aziendale. Il comportamento dell'agente è definibile e auditabile.</p>
+        </div>
+        <div class="card">
+          <h3>Open source</h3>
+          <p>MIT license. No proprietary dependencies. Active community and modular components.</p>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card hl" style="height:100%">
+        <h3 class="accent">Not a finished product</h3>
+        <p style="margin-bottom:12px">Enthusiast is the foundation on which to build customized and controllable Agentic Commerce experiences.</p>
+        <div class="flow flow-col gap-sm mt-s">
+          <div class="node wide" style="border-left:3px solid var(--mut)"><b>Catalog · Content · Rules</b><span>Existing company data</span></div>
+          <div class="arr" style="justify-content:center">↓</div>
+          <div class="node wide hl"><b>Enthusiast</b><span>RAG, vector search, workflow orchestration</span></div>
+          <div class="arr" style="justify-content:center">↓</div>
+          <div class="node wide ok"><b>Conversational experience and agents</b><span>AI specialized for the brand</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Source: Enthusiast documentation · enthusiast/README.md</span><span>10</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 11: FROM INTERACTION TO RESPONSE ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>From user interaction to useful response</small>How it works, in simple terms</h2>
+  <div class="flow mt-m" style="max-width:1060px">
+    <div class="node" style="border-left:3px solid var(--prop)">
+      <b>1. Customer asks a question</b>
+      <span>Expresses the need in their own words, in natural language</span>
+    </div>
+    <div class="arr">→</div>
+    <div class="node hl">
+      <b>2. L'assistente interpreta</b>
+      <span>Understands context and asks for clarification when needed</span>
+    </div>
+    <div class="arr">→</div>
+    <div class="node" style="border-left:3px solid var(--ok)">
+      <b>3. Uses catalog and content</b>
+      <span>Searches the company catalog and proposes relevant options</span>
+    </div>
+    <div class="arr">→</div>
+    <div class="node ok">
+      <b>4. Risposta spiegata e orientata all'azione</b>
+      <span>Customer receives comparison, motivation, and can act</span>
+    </div>
+  </div>
+  <div class="grid g2 mt-m" style="max-width:1060px">
+    <div class="card hl">
+      <h3>Fundamental principle</h3>
+      <p style="font-size:18px"><b>Nessuna azione commerciale rilevante senza conferma dell'utente.</b> L'assistente propone e spiega; il cliente decide.</p>
+    </div>
+    <div class="card">
+      <h3>Perché è diverso da un chatbot</h3>
+      <p>It doesn’t generate generic responses: it’s anchored to the real catalog, real prices, and company rules. Every recommendation is motivated and verifiable.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: project documentation · design principle</span><span>11</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 12: DEFEND AND GROW ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Defending and growing the customer base</small>Perché è una difesa, non solo una leva di crescita</h2>
+  <div class="flow mt-s" style="max-width:1060px">
+    <div class="node">
+      <b>Less effort</b>
+      <span>Customer finds what they need with fewer steps</span>
+    </div>
+    <div class="arr">→</div>
+    <div class="node">
+      <b>Greater trust</b>
+      <span>Explained answers, anchored to the catalog</span>
+    </div>
+    <div class="arr">→</div>
+    <div class="node hl">
+      <b>Better choice</b>
+      <span>Decision consapevole, meno indecisione</span>
+    </div>
+    <div class="arr">→</div>
+    <div class="node" style="border-color:var(--ok)">
+      <b>Greater satisfaction</b>
+      <span>Positive experience that invites return</span>
+    </div>
+    <div class="arr">→</div>
+    <div class="node ok">
+      <b>Higher return probability</b>
+      <span>Customer returns and recommends</span>
+    </div>
+  </div>
+  <div class="grid g2 mt-m" style="max-width:1060px">
+    <div class="card">
+      <h3>Defending the customer base</h3>
+      <p>The benefit isn’t just acquisition. It reduces the reasons existing customers leave, improves self-service, and makes the brand easier to choose.</p>
+      <p class="mut mt-s" style="font-size:14px">Without this evolution, we could see a gradual migration toward simpler experiences offered by competitors or AI agents.</p>
+    </div>
+    <div class="card">
+      <h3>Growth lever</h3>
+      <p>Customers who couldn’t find the right product can now do so. Large and technical catalogs become accessible. New conversational channels expand reach.</p>
+      <p class="mut mt-s" style="font-size:14px">It’s a strategic thesis to validate with internal KPIs: we’re not presenting proven results, but a measurable path.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: project documentation · strategic thesis to validate</span><span>12</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 13: KPI AND MEASUREMENT ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>KPI and measurement</small>How we measure success <span class="validate-badge">To validate</span></h2>
+  <table class="mt-s">
+    <thead>
+      <tr><th>Category</th><th>Proposed KPI</th><th>Current status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Conversion</td><td>Assisted vs non-assisted conversion rate</td><td>To measure (needs checkout and analytics)</td></tr>
+      <tr><td>Abandonment</td><td>Abandonment ricerca e carrello nelle sessioni assistite</td><td>To measure (needs interaction logging)</td></tr>
+      <tr><td>Time</td><td>Time necessario per trovare un prodotto</td><td>To measure (needs session tracking)</td></tr>
+      <tr><td>Engagement</td><td>Conversation completion and recommendation click-through</td><td>To measure (needs event tracking)</td></tr>
+      <tr><td>Quality</td><td>Useful response and resolution rate</td><td>To measure (needs user feedback)</td></tr>
+      <tr><td>Satisfaction</td><td>Customer satisfaction for assisted sessions</td><td>To measure (needs survey/post-interaction)</td></tr>
+      <tr><td>Return</td><td>Repeat purchase rate</td><td>To measure (needs identity and order history)</td></tr>
+      <tr><td>Support</td><td>Ticket deflection and support time saved</td><td>To measure (needs ticketing system integration)</td></tr>
+      <tr><td>Value</td><td>Value medio ordine (quando rilevante)</td><td>To measure (needs checkout)</td></tr>
+    </tbody>
+  </table>
+  <p class="mt-m" style="font-size:15px;color:var(--fg2)"><b>Approccio di validazione:</b> definire baseline attuale, stabilire gruppo di controllo e avviare sperimentazione progressiva. I KPI vanno monitorati prima, durante e dopo il pilot.</p>
+  <div class="foot"><span>Source: project documentation §7 · proposed KPIs, not yet measured</span><span>13</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════ SLIDE 14: DECISION AND NEXT STEPS ═══════════════════════════════════════════ -->
+<section class="slide">
+  <h2><small>Decision e next steps</small>Where we start</h2>
+  <div class="grid g23 mt-s">
+    <div>
+      <div class="card hl mb-m" style="border-width:2px">
+        <h3 style="font-size:20px">Decision richiesta</h3>
+        <p style="font-size:18px">Launch a controlled Agentic Commerce journey with a targeted pilot on a high-friction, measurable case.</p>
+      </div>
+      <div class="flex flex-col gap-sm">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-text"><b>Define the priority journey</b><p>Scegliere un caso d'uso ad alta frizione (es. product discovery o assistenza pre-acquisto)</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-text"><b>Establish KPIs and baseline</b><p>Measure the current situation before any change</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-text"><b>Connect necessary data and content</b><p>Catalog, descriptions, attributes, knowledge base</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-text"><b>Design the UX and user control</b><p>Define interaction, fallback, and human escalation</p></div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-text"><b>Launch pilot and measure</b><p>Collect data, learn, extend gradually</p></div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="justify-content:center">
+      <p style="font-size:22px;line-height:1.5;text-align:center;color:var(--fg2)"><em>"It’s not just about adding AI: it’s about making it easier for customers to keep choosing us."</em></p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: project documentation · proposed roadmap</span><span>14</span></div>
+</section>
+
+</div></div>
+
+<div id="ui">
+  <button id="prev" aria-label="Previous slide">◀ Back</button>
+  <button id="next" aria-label="Next slide">Next ▶</button>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="dots"></div>
+  <span id="count"></span>
+  <button id="print" aria-label="Print">Print</button>
+</div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide')),i=0;
+  var stage=document.getElementById('stage'),fill=document.getElementById('fill'),count=document.getElementById('count'),dots=document.getElementById('dots');
+  slides.forEach(function(_,n){var d=document.createElement('i');d.title='Slide '+(n+1);d.onclick=function(){go(n)};dots.appendChild(d)});
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i)});
+    [].forEach.call(dots.children,function(d,k){d.classList.toggle('on',k===i)});
+    fill.style.width=((i+1)/slides.length*100)+'%';
+    count.textContent=(i+1)+' / '+slides.length;
+    try{history.replaceState(null,'','#'+(i+1))}catch(e){}
+  }
+  function fit(){
+    var w=window.innerWidth,h=window.innerHeight-52;
+    var s=Math.min(w/1280,h/720);
+    stage.style.transform='scale('+s+')';
+    stage.style.marginBottom='52px';
+  }
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(i+1)}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1)}
+    else if(e.key==='Home')go(0);
+    else if(e.key==='End')go(slides.length-1);
+    else if(e.key==='p'||e.key==='P')window.print();
+  });
+  document.getElementById('prev').onclick=function(){go(i-1)};
+  document.getElementById('next').onclick=function(){go(i+1)};
+  document.getElementById('print').onclick=function(){window.print()};
+  var x0=null;
+  document.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)go(i+(dx<0?1:-1));x0=null});
+  window.addEventListener('resize',fit);
+  var start=parseInt(location.hash.slice(1),10);
+  fit();go(isNaN(start)?0:start-1);
+})();
+</script>
+</body>
+</html>

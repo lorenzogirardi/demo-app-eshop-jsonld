@@ -2,6 +2,7 @@ import ProductCard from "@/components/ProductCard";
 import { prisma } from "@/lib/db/prisma";
 import Image from "next/image";
 import Link from "next/link";
+import { itemListJsonLd, safeJsonLd } from "@/lib/seo/jsonld";
 
 export default async function Home() {
   const products = await prisma.product.findMany({
@@ -10,6 +11,10 @@ export default async function Home() {
 
   return (
     <div>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListJsonLd("All products", products, "/")) }}
+      />
       <div className="hero rounded-xl bg-base-200">
         <div className="hero-content flex-col lg:flex-row">
           <Image

@@ -6,6 +6,11 @@ import { Metadata } from "next";
 import { cache } from "react";
 import AddToCartButton from "@/components/AddToCartButton";
 import { incrementProductQuantity } from "./actions";
+import { headers } from "next/headers";
+import { getStore } from "@/lib/ai/store";
+import { recordBotVisit } from "@/lib/bots";
+import { STORE_NAME, absoluteUrl } from "@/lib/site";
+import { productJsonLd, productBreadcrumbJsonLd, safeJsonLd } from "@/lib/seo/jsonld";
 
 interface ProductPageProps {
   params: {
@@ -23,18 +28,25 @@ export async function generateMetadata({
   params: { id },
 }: ProductPageProps): Promise<Metadata> {
   const product = await getProduct(id);
-  const url = process.env.URL + "/products/" + id
+  const seo = getStore().seo[id];
+  const title = seo?.seo_title || `${product.name} - ${STORE_NAME}`;
+  const description = seo?.seo_description || product.description;
+  const url = absoluteUrl(`/products/${id}`);
 
   return {
-    title: product.name,
-    description: product.description,
+    title,
+    description,
+    keywords: seo?.seo_tags,
+    alternates: { canonical: url },
     openGraph: {
-      title: product.name,
-      description: product.description,
-      url: url,
-      images: [{ url: product.imageUrl }],
       type: "website",
+      title,
+      description,
+      url,
+      siteName: STORE_NAME,
+      images: [{ url: product.imageUrl }],
     },
+    twitter: { card: "summary_large_image", title, description, images: [product.imageUrl] },
   };
 }
 
@@ -42,29 +54,17 @@ export default async function ProductPage({
   params: { id },
 }: ProductPageProps) {
   const product = await getProduct(id);
-  const { name, description, imageUrl, price } = product;
-  const url = process.env.URL + "/products/" + id;
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name,
-    description,
-    image: imageUrl,
-    offers: {
-      "@type": "Offer",
-      price: (price / 100).toString(),
-      priceCurrency: "GBP",
-      availability: "https://schema.org/InStock",
-      url: url,
-    },
-  };
+  recordBotVisit(headers().get("user-agent"), `/products/${id}`);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:items-center">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(productJsonLd(product)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(productBreadcrumbJsonLd(product)) }}
       />
       <Image
         unoptimized

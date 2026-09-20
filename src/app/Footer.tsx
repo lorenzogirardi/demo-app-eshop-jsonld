@@ -17,6 +17,13 @@ export default function Footer() {
           <a className="link-hover link">Press kit</a>
         </div>
         <div>
+          <span className="footer-title">For AI agents</span>
+          <a className="link-hover link" href="/llms.txt">llms.txt</a>
+          <a className="link-hover link" href="/openapi.json">OpenAPI</a>
+          <a className="link-hover link" href="/feed/products.json">Product feed</a>
+          <a className="link-hover link" href="/sitemap.xml">Sitemap</a>
+        </div>
+        <div>
           <span className="footer-title">Legal</span>
           <a className="link-hover link">Terms of use</a>
           <a className="link-hover link">Privacy policy</a>
